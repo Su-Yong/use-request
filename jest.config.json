@@ -1,0 +1,21 @@
+{
+  "preset": "ts-jest",
+  "testEnvironment": "jsdom",
+  "testRegex": "/test/.*\\.spec\\.tsx?",
+  "setupFilesAfterEnv": [
+    "<rootDir>/test/jest.setup.ts"
+  ],
+  "moduleDirectories": [
+    "node_modules",
+    "<rootDir>/src"
+  ],
+  "moduleNameMapper": {
+    "^use-request$": "<rootDir>/src"
+  },
+  "coveragePathIgnorePatterns": [
+    ".vscode",
+    "node_modules/",
+    "dist/",
+    "test/"
+  ]
+}
