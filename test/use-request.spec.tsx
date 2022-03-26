@@ -375,6 +375,76 @@ describe('useRequest', () => {
     });
   });
 
+  it('option(dedupingWhenCached: true)', async () => {
+    const newFetcher = jest.fn(options.fetcher);
+
+    const TestComponent = () => {
+      const { fetcher } = useRequest('/dedupingWhenCached', {
+        ...options,
+        fetcher: newFetcher,
+        dedupingWhenCached: true,
+      });
+
+      const click = () => {
+        fetcher('deduping');
+      }
+
+      return (
+        <div>
+          <button data-testid={'button'} onClick={click} />
+        </div>
+      );
+    };
+
+    render(
+      <RequestConfigProvider value={{ state }}>
+        <TestComponent />
+      </RequestConfigProvider>
+    );
+    fireEvent.click(screen.getByTestId('button'));
+    fireEvent.click(screen.getByTestId('button'));
+    fireEvent.click(screen.getByTestId('button'));
+    
+    await waitFor(() => {
+      expect(newFetcher.mock.calls.length).toBe(1);
+    });
+  });
+
+  it('option(dedupingWhenCached: false)', async () => {
+    const newFetcher = jest.fn(options.fetcher);
+
+    const TestComponent = () => {
+      const { fetcher } = useRequest('/dedupingWhenCached', {
+        ...options,
+        fetcher: newFetcher,
+        dedupingWhenCached: false,
+      });
+
+      const click = () => {
+        fetcher('deduping');
+      }
+
+      return (
+        <div>
+          <button data-testid={'button'} onClick={click} />
+        </div>
+      );
+    };
+
+    render(
+      <RequestConfigProvider value={{ state }}>
+        <TestComponent />
+      </RequestConfigProvider>
+    );
+    fireEvent.click(screen.getByTestId('button'));
+    fireEvent.click(screen.getByTestId('button'));
+    fireEvent.click(screen.getByTestId('button'));
+    
+    await waitFor(() => {
+      expect(newFetcher.mock.calls.length).toBe(3);
+    });
+  });
+
   xit('option(UNSTABLE__suspense: true)', async () => {
     throw Error('TODO');
   });
