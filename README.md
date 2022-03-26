@@ -1,11 +1,20 @@
 # use-request
 Zero dependency data fetch library for React
 
+# Features
+* Zero dependency
+* Support TypeScript
+* Prevent useless rerender
+
 # Installation
-`$ npm install use-request`
+`npm install use-request`
+
+or
+
+`yarn add use-request`
 
 # Usage
-```ts
+```tsx
 interface Post {
   title: string;
   content: string;
@@ -40,5 +49,10 @@ const Component = () => {
 };
 ```
 
-# API
-Go to [Document](docs/api.md)
+# [Document](docs/index.md)
+Go to [Document](docs/index.md)
+
+# [Contributors](https://github.com/Su-Yong/use-request/contributors)
+|[Su-Yong](https://github.com/Su-Yong)|
+|---|
+|<img width="100px" height="100px" src="https://github.com/Su-Yong.png"/>|
