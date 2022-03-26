@@ -49,14 +49,16 @@ export interface RequestOptions<Data, FetchData extends unknown[]> {
   ignoreWhenFetching?: boolean;
 
   /**
-   * TODO
+   * true -> doesn't send request if same request is fetching
+   * false -> send request same request
+   * default: true
    */
-  UNSTABLE__suspense?: boolean; // UNSTABLE
+  dedupingWhenCached?: boolean;
 
   /**
    * TODO
-   * ignoreWhenSynced?: boolean
    */
+  UNSTABLE__suspense?: boolean; // UNSTABLE
 
   /**
    * 

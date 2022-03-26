@@ -14,8 +14,7 @@ export const defaultFetcher = async (
   },
 });
 
-type DefaultFetchData = [any, RequestInit['method'], RequestInit['headers']];
-export const defaultOptions: RequestOptions<any, DefaultFetchData> = {
+export const defaultOptions: RequestOptions<any, any> = {
   initWith: undefined,
   cache: true,
   ignoreWhenFetching: false,
