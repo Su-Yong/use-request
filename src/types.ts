@@ -54,6 +54,11 @@ export interface RequestOptions<Data, FetchData extends unknown[]> {
   UNSTABLE__suspense?: boolean; // UNSTABLE
 
   /**
+   * TODO
+   * ignoreWhenSynced?: boolean
+   */
+
+  /**
    * 
    */
   fetcher?: (url: string, ...args: FetchData) => Promise<Data>;
