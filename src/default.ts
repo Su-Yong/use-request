@@ -1,4 +1,4 @@
-import { RequestOptions } from './types';
+import { RequestOptions } from './options';
 
 export const defaultFetcher = async (
   url: string,

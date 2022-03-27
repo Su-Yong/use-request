@@ -1,22 +1,27 @@
-import { useCallback, useContext, useEffect, useMemo, useRef } from 'react';
-import { NetworkJob, RequestConfig } from '.';
-import { defaultOptions } from './default';
-import { RequestConfigContext } from './request-config';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { mergeOptions, RequestOptions } from './options';
+import { RequestConfigType, useRequestConfig } from './request-config';
+import { subscribe } from './subscribe';
 
-import { DefaultData, DefaultError, Requester, RequestFetcher, RequestKey, RequestOptions, StateListener } from "./types";
+import { DefaultData, DefaultError, NetworkJob, Requester, RequestFetcher, RequestKey } from './types';
 import useMemoState from './use-memo-state';
-import { mergeOptions } from './utils';
 
 const getCachedValue = <Data, Err, FetchData extends unknown[]>(
   id: string | undefined,
   options: RequestOptions<Data, FetchData>,
-  state: RequestConfig['state'],
-): NetworkJob<Data, Err> | undefined => {
-  if (options.cache && id && options.initWith !== null) {
-    return state?.get(id) as NetworkJob<Data, Err> | undefined;
+  config: RequestConfigType<Data, FetchData>['cache'],
+): NetworkJob<Data, Err> => {
+  const fallback: NetworkJob<Data, Err> = {
+    data: undefined,
+    error: undefined,
+    isValidating: false,
+  };
+
+  if (id && options.cache && options.initWith !== null) {
+    return config?.get(id) ?? fallback;
   }
 
-  return undefined;
+  return fallback;
 }
 
 const useRequest = <
@@ -27,25 +32,23 @@ const useRequest = <
   key: RequestKey,
   initOptions: RequestOptions<Data, FetchData> = {},
 ): Requester<Data, Err, RequestOptions<Data, FetchData>> => {
+  const config = useRequestConfig<Data, FetchData>();
   const mountRef = useRef(false);
 
-  const { state } = useContext(RequestConfigContext);
   const id = useMemo(() => typeof key === 'string' ? key : key.id ?? key.url, [key]);
   const url = useMemo(() => typeof key === 'string' ? key : key.url, [key]);
-  const options = useMemo(() => mergeOptions(initOptions, defaultOptions as RequestOptions<Data, FetchData>), [initOptions]);
+  const options = useMemo(() => mergeOptions(initOptions ?? {}, config.options), [initOptions]);
 
   const {
     data: initData,
     error: initError,
-  } = (
-    getCachedValue<Data, Err, FetchData>(id, options, state)
-      ?? { data: undefined, error: undefined }
-  );
+    isValidating: initIsValidating,
+  } = getCachedValue<Data, Err, FetchData>(id, options, config.cache);
 
   const [result, setState, ref] = useMemoState<Omit<Requester<Data, Err, RequestOptions<Data, FetchData>>, 'fetcher'>>({
     data: initData,
     error: initError,
-    isValidating: !!options.initWith,
+    isValidating: initIsValidating || !!options.initWith,
   });
 
   const fetcher: RequestFetcher<RequestOptions<Data, FetchData>> = useCallback(async (...args) => {
@@ -55,49 +58,39 @@ const useRequest = <
 
     setState('isValidating', true);
 
-    let isError = false;
-    const response = await options.fetcher?.(url, ...args)?.catch((err) => {
-      isError = true;
-
-      return err;
-    });
+    const newState: NetworkJob<Data, Err> = await options.fetcher(url, ...args)
+      .then((response) => ({
+        data: response,
+        error: undefined,
+        isValidating: false,
+      }))
+      .catch((err) => ({
+        data: undefined,
+        error: err,
+        isValidating: false,
+      }));
 
     if (!mountRef.current) return;
     if (options.cache) {
-      const value = (
-        isError
-          ? {
-            url,
-            error: response,
-          }
-          : {
-            url,
-            data: response,
-          }
-      );
-
-      state?.set(id, value);
+      config.cache.set(id, newState);
     } else {
-      if (isError) setState('error', response as Err);
-      else setState('data', response as Data);
+      if (newState.data) setState('data', newState.data);
+      if (newState.error) setState('error', newState.error);
     }
 
     setState('isValidating', false);
   }, [url, options, ref, mountRef]);
   
   useEffect(() => {
-    const listener: StateListener<NetworkJob> = (event) => {
-      if (options.cache && event.key === id) {
-        if (event.value.data) setState('data', event.value.data);
-        if (event.value.error) setState('error', event.value.error as unknown as Err);
-      }
-    };
+    if (options.cache) {
+      const unsubscribe = subscribe(id, (newState) => {
+        if (newState.data) setState('data', newState.data as Data);
+        if (newState.error) setState('error', newState.error as Err);
+        if (newState.isValidating) setState('isValidating', newState.isValidating);
+      });
 
-    state?.subscribe?.(listener);
-
-    return () => {
-      state?.unsubscribe?.(listener);
-    };
+      return unsubscribe;
+    }
   }, [id, options.cache]);
 
   useEffect(() => {
