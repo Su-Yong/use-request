@@ -33,6 +33,7 @@ describe('useRequest', () => {
       }
 
       renderCount += 1;
+      console.log('basic', data, isValidating);
 
       return (
         <div>

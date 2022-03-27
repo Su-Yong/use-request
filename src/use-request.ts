@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { mergeOptions, RequestOptions } from './options';
 import { RequestConfigType, useRequestConfig } from './request-config';
-import { subscribe } from './subscribe';
+import { broadcast, subscribe } from './subscribe';
 
 import { DefaultData, DefaultError, NetworkJob, Requester, RequestFetcher, RequestKey } from './types';
 import useMemoState from './use-memo-state';
@@ -45,7 +45,7 @@ const useRequest = <
     isValidating: initIsValidating,
   } = getCachedValue<Data, Err, FetchData>(id, options, config.cache);
 
-  const [result, setState, ref] = useMemoState<Omit<Requester<Data, Err, RequestOptions<Data, FetchData>>, 'fetcher'>>({
+  const [result, setState, ref] = useMemoState<NetworkJob<Data, Err>>({
     data: initData,
     error: initError,
     isValidating: initIsValidating || !!options.initWith,
@@ -73,12 +73,11 @@ const useRequest = <
     if (!mountRef.current) return;
     if (options.cache) {
       config.cache.set(id, newState);
+      broadcast(id, newState);
     } else {
-      if (newState.data) setState('data', newState.data);
+      if (newState.data) setState(['data', 'isValidating'], [newState.data, false]);
       if (newState.error) setState('error', newState.error);
     }
-
-    setState('isValidating', false);
   }, [url, options, ref, mountRef]);
   
   useEffect(() => {
