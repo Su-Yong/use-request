@@ -1,5 +1,5 @@
 import React, { useContext, useMemo } from 'react';
-import { NetworkJob } from './types';
+import { State } from './types';
 import { createOptions, RequestOptions, RequiredRequestOptions } from './options';
 
 export interface Cache<Data> {
@@ -11,7 +11,7 @@ export interface Cache<Data> {
 }
 
 export interface RequestConfigType<Data, FetchData extends unknown[]> {
-  cache: Cache<NetworkJob<Data, any>>;
+  cache: Cache<State<Data, any>>;
   options: RequestOptions<Data, FetchData>;
 }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-import { createOptions, NetworkJob, RequestConfig, useRequest, Cache } from '../src';
+import { createOptions, State, RequestConfig, useRequest, Cache } from '../src';
 
 import { time } from './utils';
 
@@ -16,7 +16,7 @@ const options = createOptions({
 });
 
 describe('useRequest', () => {
-  let cache: Cache<NetworkJob<any, any>> = new Map();
+  let cache: Cache<State<any, any>> = new Map();
 
   beforeEach(() => {
     cache = new Map();
@@ -33,7 +33,6 @@ describe('useRequest', () => {
       }
 
       renderCount += 1;
-      console.log('basic', data, isValidating);
 
       return (
         <div>
@@ -58,7 +57,7 @@ describe('useRequest', () => {
     expect(screen.getByTestId('validate')).toHaveTextContent('true');
     
     await waitFor(() => {
-      expect(renderCount).toBe(4);
+      expect(renderCount).toBe(3);
       expect(screen.getByTestId('data')).toHaveTextContent('test');
       expect(screen.getByTestId('validate')).toHaveTextContent('false');  
     });
@@ -374,76 +373,6 @@ describe('useRequest', () => {
     
     await waitFor(() => {
       expect(screen.getByTestId('data')).toHaveTextContent(/^\/ignoreWhenFetching:validate$/);
-    });
-  });
-
-  it('option(dedupingWhenCached: true)', async () => {
-    const newFetcher = jest.fn(options.fetcher);
-
-    const TestComponent = () => {
-      const { fetcher } = useRequest('/dedupingWhenCached', {
-        ...options,
-        fetcher: newFetcher,
-        dedupingWhenCached: true,
-      });
-
-      const click = () => {
-        fetcher('deduping');
-      }
-
-      return (
-        <div>
-          <button data-testid={'button'} onClick={click} />
-        </div>
-      );
-    };
-
-    render(
-      <RequestConfig cache={cache}>
-        <TestComponent />
-      </RequestConfig>
-    );
-    fireEvent.click(screen.getByTestId('button'));
-    fireEvent.click(screen.getByTestId('button'));
-    fireEvent.click(screen.getByTestId('button'));
-    
-    await waitFor(() => {
-      expect(newFetcher.mock.calls.length).toBe(1);
-    });
-  });
-
-  it('option(dedupingWhenCached: false)', async () => {
-    const newFetcher = jest.fn(options.fetcher);
-
-    const TestComponent = () => {
-      const { fetcher } = useRequest('/dedupingWhenCached', {
-        ...options,
-        fetcher: newFetcher,
-        dedupingWhenCached: false,
-      });
-
-      const click = () => {
-        fetcher('deduping');
-      }
-
-      return (
-        <div>
-          <button data-testid={'button'} onClick={click} />
-        </div>
-      );
-    };
-
-    render(
-      <RequestConfig cache={cache}>
-        <TestComponent />
-      </RequestConfig>
-    );
-    fireEvent.click(screen.getByTestId('button'));
-    fireEvent.click(screen.getByTestId('button'));
-    fireEvent.click(screen.getByTestId('button'));
-    
-    await waitFor(() => {
-      expect(newFetcher.mock.calls.length).toBe(3);
     });
   });
 

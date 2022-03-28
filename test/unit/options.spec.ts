@@ -143,11 +143,12 @@ describe('Utils: createOptions', () => {
       ignoreWhenFetching: true,
     });
 
-    expect(option).toEqual({
+    // fetcher is function
+    expect(JSON.stringify(option)).toEqual(JSON.stringify({
       ...defaultOptions,
       initWith: null,
       cache: false,
       ignoreWhenFetching: true,
-    });
+    }));
   });
 });

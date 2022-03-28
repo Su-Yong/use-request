@@ -2,7 +2,6 @@ export interface RequestOptions<Data, FetchData extends unknown[]> {
   initWith?: FetchData | undefined | null;
   cache?: boolean;
   ignoreWhenFetching?: boolean;
-  dedupingWhenCached?: boolean;
   UNSTABLE__suspense?: boolean; // UNSTABLE
 
   fetcher?: (url: string, ...args: FetchData) => Promise<Data>;
@@ -31,7 +30,6 @@ export const defaultOptions: RequiredRequestOptions<any, any> = {
   initWith: undefined,
   cache: true,
   ignoreWhenFetching: false,
-  dedupingWhenCached: true,
   UNSTABLE__suspense: false,
 
   fetcher: defaultFetcher,
@@ -41,7 +39,6 @@ const keys: (keyof RequiredRequestOptions<any, any>)[] = [
   'initWith',
   'cache',
   'ignoreWhenFetching',
-  'dedupingWhenCached',
   'UNSTABLE__suspense',
 
   'fetcher',
@@ -50,8 +47,8 @@ const keys: (keyof RequiredRequestOptions<any, any>)[] = [
 export const mergeOptions = <Data, FetchData extends unknown[]>(
   primary: RequestOptions<Data, FetchData>,
   secondary: RequestOptions<Data, FetchData>,
-): RequiredRequestOptions<Data, FetchData> => {
-  const result: RequiredRequestOptions<Data, FetchData> = { ...defaultOptions };
+): RequestOptions<Data, FetchData> => {
+  const result: RequestOptions<Data, FetchData> = {};
 
   keys.forEach((key) => {
     if (key === 'initWith') {
@@ -67,16 +64,16 @@ export const mergeOptions = <Data, FetchData extends unknown[]>(
             result.initWith!.push(...initWith.slice(result.initWith!.length));
           }
         });
-      } else {
+      } else if (!Array.isArray(result.initWith)) {
         if (Object.hasOwnProperty.call(primary, 'initWith')) result.initWith = primary.initWith;
         else if (Object.hasOwnProperty.call(secondary, 'initWith')) result.initWith = secondary.initWith;
       }
-    }
-
-    if (Object.hasOwnProperty.call(primary, key)) {
-      result[key] = primary[key] as any;
-    } else if (Object.hasOwnProperty.call(secondary, key)) {
-      result[key] = secondary[key] as any;
+    } else {
+      if (Object.hasOwnProperty.call(primary, key)) {
+        result[key] = primary[key] as any;
+      } else if (Object.hasOwnProperty.call(secondary, key)) {
+        result[key] = secondary[key] as any;
+      }
     }
   });
 
@@ -88,4 +85,4 @@ export const createOptions = <Data, FetchData extends unknown[]>(
 ): RequiredRequestOptions<Data, FetchData> => mergeOptions(
   options,
   defaultOptions,
-);
+) as RequiredRequestOptions<Data, FetchData>;

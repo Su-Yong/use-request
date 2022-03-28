@@ -1,10 +1,10 @@
-import { NetworkJob } from '.';
+import { State } from './types';
 
-export type Listener<Data, Err> = (state: NetworkJob<Data, Err>) => void;
+export type Listener<Data, Err> = (state: State<Data, Err>) => void;
 
 const map = new Map<string, Listener<any, any>[]>();
 
-export const broadcast = <Data, Err>(id: string, state: NetworkJob<Data, Err>) => {
+export const broadcast = <Data, Err>(id: string, state: State<Data, Err>) => {
   const listeners = map.get(id);
 
   listeners?.forEach((listener) => {

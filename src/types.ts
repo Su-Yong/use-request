@@ -10,7 +10,7 @@ export type RequestFetcher<Option extends RequestOptions<any, any>> = (
     : () => void | Promise<void>
 );
 
-export type NetworkJob<Data, Err> = {
+export type State<Data, Err> = {
   data: Data | undefined;
   error: Err | undefined;
   isValidating: boolean;
@@ -19,7 +19,7 @@ export interface Requester<
   Data = DefaultData,
   Err = DefaultError,
   Option extends RequestOptions<any, any> = RequestOptions<Data, any>,
-> extends NetworkJob<Data, Err> {
+> extends State<Data, Err> {
   fetcher: RequestFetcher<Option>;
 }
 
