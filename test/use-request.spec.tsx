@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { useRequest, StateManager, createOptions, RequestStateManager } from '../src';
-import { RequestConfigProvider } from '../src/request-config';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+
+import { createOptions, State, RequestConfig, useRequest, Cache } from '../src';
+
 import { time } from './utils';
 
 const options = createOptions({
@@ -15,10 +16,10 @@ const options = createOptions({
 });
 
 describe('useRequest', () => {
-  let state: RequestStateManager = new StateManager();
+  let cache: Cache<State<any, any>> = new Map();
 
   beforeEach(() => {
-    state = new StateManager();
+    cache = new Map();
   });
 
   it('basic usage', async () => {
@@ -43,9 +44,9 @@ describe('useRequest', () => {
     };
 
     render(
-      <RequestConfigProvider value={{ state }}>
+      <RequestConfig cache={cache}>
         <TestComponent />
-      </RequestConfigProvider>
+      </RequestConfig>
     );
     expect(renderCount).toBe(1);
     expect(screen.getByTestId('data')).toHaveTextContent('');
@@ -56,7 +57,7 @@ describe('useRequest', () => {
     expect(screen.getByTestId('validate')).toHaveTextContent('true');
     
     await waitFor(() => {
-      expect(renderCount).toBe(4);
+      expect(renderCount).toBe(3);
       expect(screen.getByTestId('data')).toHaveTextContent('test');
       expect(screen.getByTestId('validate')).toHaveTextContent('false');  
     });
@@ -82,9 +83,9 @@ describe('useRequest', () => {
     };
 
     const { unmount } = render(
-      <RequestConfigProvider value={{ state }}>
+      <RequestConfig cache={cache}>
         <TestComponent />
-      </RequestConfigProvider>
+      </RequestConfig>
     );
 
     expect(screen.getByTestId('data')).toHaveTextContent(/^$/);
@@ -98,9 +99,9 @@ describe('useRequest', () => {
     unmount();
 
     render(
-      <RequestConfigProvider value={{ state }}>
+      <RequestConfig cache={cache}>
         <TestComponent />
-      </RequestConfigProvider>
+      </RequestConfig>
     );
     expect(screen.getByTestId('data')).toHaveTextContent(/^\/initWith:initWith$/);
     expect(screen.getByTestId('validate')).toHaveTextContent(/^true$/);
@@ -131,9 +132,9 @@ describe('useRequest', () => {
     };
 
     const { unmount } = render(
-      <RequestConfigProvider value={{ state }}>
+      <RequestConfig cache={cache}>
         <TestComponent />
-      </RequestConfigProvider>
+      </RequestConfig>
     );
     expect(screen.getByTestId('data')).toHaveTextContent(/^$/);
     expect(screen.getByTestId('validate')).toHaveTextContent(/^false$/);
@@ -150,9 +151,9 @@ describe('useRequest', () => {
     unmount();
 
     render(
-      <RequestConfigProvider value={{ state }}>
+      <RequestConfig cache={cache}>
         <TestComponent />
-      </RequestConfigProvider>
+      </RequestConfig>
     );
     expect(screen.getByTestId('data')).toHaveTextContent(/^$/);
     expect(screen.getByTestId('validate')).toHaveTextContent(/^false$/);
@@ -180,9 +181,9 @@ describe('useRequest', () => {
     };
 
     const { unmount } = render(
-      <RequestConfigProvider value={{ state }}>
+      <RequestConfig cache={cache}>
         <TestComponent />
-      </RequestConfigProvider>,
+      </RequestConfig>,
     );
     expect(screen.getByTestId('data')).toHaveTextContent(/^$/);
     expect(screen.getByTestId('validate')).toHaveTextContent(/^false$/);
@@ -199,9 +200,9 @@ describe('useRequest', () => {
     unmount();
 
     render(
-      <RequestConfigProvider value={{ state }}>
+      <RequestConfig cache={cache}>
         <TestComponent />
-      </RequestConfigProvider>,
+      </RequestConfig>,
     );
     expect(screen.getByTestId('data')).toHaveTextContent(/^\/initWith:default$/);
     expect(screen.getByTestId('validate')).toHaveTextContent(/^false$/);
@@ -240,9 +241,9 @@ describe('useRequest', () => {
     };
 
     render(
-      <RequestConfigProvider value={{ state }}>
+      <RequestConfig cache={cache}>
         <TestComponent />
-      </RequestConfigProvider>
+      </RequestConfig>
     );
     expect(screen.getByTestId('data')).toHaveTextContent(/^$/);
 
@@ -290,9 +291,9 @@ describe('useRequest', () => {
     };
 
     render(
-      <RequestConfigProvider value={{ state }}>
+      <RequestConfig cache={cache}>
         <TestComponent />
-      </RequestConfigProvider>
+      </RequestConfig>
     );
     expect(screen.getByTestId('data')).toHaveTextContent(/^$/);
 
@@ -328,9 +329,9 @@ describe('useRequest', () => {
     };
 
     render(
-      <RequestConfigProvider value={{ state }}>
+      <RequestConfig cache={cache}>
         <TestComponent />
-      </RequestConfigProvider>
+      </RequestConfig>
     );
     fireEvent.click(screen.getByTestId('button'));
     fireEvent.click(screen.getByTestId('button'));
@@ -362,9 +363,9 @@ describe('useRequest', () => {
     };
 
     render(
-      <RequestConfigProvider value={{ state }}>
+      <RequestConfig cache={cache}>
         <TestComponent />
-      </RequestConfigProvider>
+      </RequestConfig>
     );
     fireEvent.click(screen.getByTestId('button'));
     fireEvent.click(screen.getByTestId('button'));
@@ -372,76 +373,6 @@ describe('useRequest', () => {
     
     await waitFor(() => {
       expect(screen.getByTestId('data')).toHaveTextContent(/^\/ignoreWhenFetching:validate$/);
-    });
-  });
-
-  it('option(dedupingWhenCached: true)', async () => {
-    const newFetcher = jest.fn(options.fetcher);
-
-    const TestComponent = () => {
-      const { fetcher } = useRequest('/dedupingWhenCached', {
-        ...options,
-        fetcher: newFetcher,
-        dedupingWhenCached: true,
-      });
-
-      const click = () => {
-        fetcher('deduping');
-      }
-
-      return (
-        <div>
-          <button data-testid={'button'} onClick={click} />
-        </div>
-      );
-    };
-
-    render(
-      <RequestConfigProvider value={{ state }}>
-        <TestComponent />
-      </RequestConfigProvider>
-    );
-    fireEvent.click(screen.getByTestId('button'));
-    fireEvent.click(screen.getByTestId('button'));
-    fireEvent.click(screen.getByTestId('button'));
-    
-    await waitFor(() => {
-      expect(newFetcher.mock.calls.length).toBe(1);
-    });
-  });
-
-  it('option(dedupingWhenCached: false)', async () => {
-    const newFetcher = jest.fn(options.fetcher);
-
-    const TestComponent = () => {
-      const { fetcher } = useRequest('/dedupingWhenCached', {
-        ...options,
-        fetcher: newFetcher,
-        dedupingWhenCached: false,
-      });
-
-      const click = () => {
-        fetcher('deduping');
-      }
-
-      return (
-        <div>
-          <button data-testid={'button'} onClick={click} />
-        </div>
-      );
-    };
-
-    render(
-      <RequestConfigProvider value={{ state }}>
-        <TestComponent />
-      </RequestConfigProvider>
-    );
-    fireEvent.click(screen.getByTestId('button'));
-    fireEvent.click(screen.getByTestId('button'));
-    fireEvent.click(screen.getByTestId('button'));
-    
-    await waitFor(() => {
-      expect(newFetcher.mock.calls.length).toBe(3);
     });
   });
 
@@ -498,12 +429,12 @@ describe('useRequest', () => {
     };
 
     render(
-      <RequestConfigProvider value={{ state }}>
+      <RequestConfig cache={cache}>
         <TestComponent id={'test1'} />
         <TestComponent id={'test2'} />
         <TestComponentUrl1 />
         <TestComponentUrl2 />
-      </RequestConfigProvider>
+      </RequestConfig>
     );
     expect(screen.getByTestId('data-test1')).toHaveTextContent(/^$/);
     expect(screen.getByTestId('data-test2')).toHaveTextContent(/^$/);
@@ -553,9 +484,9 @@ describe('useRequest', () => {
     };
 
     render(
-      <RequestConfigProvider value={{ state }}>
+      <RequestConfig cache={cache}>
         <TestComponent />
-      </RequestConfigProvider>
+      </RequestConfig>
     );
     expect(screen.getByTestId('data')).toHaveTextContent(/^$/);
     expect(screen.getByTestId('error')).toHaveTextContent(/^$/);
