@@ -14,5 +14,8 @@ export const Options = {
     fetcher: async (url, headers: RequestInit['headers'] = {}) => (await fetch(url, {
       headers,
     })).json(),
-  })
+  }),
+  GET_MUTATE: createOptions({
+    fetcher: async (url, postfix: string) => (await fetch(url + postfix)).json(),
+  }),
 };
