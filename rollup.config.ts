@@ -6,27 +6,36 @@ const typescriptPlugin = typescript({
 });
 const dtsPlugin = dts();
 
-const config = {
-  input: 'src/index.ts',
-  output: [
-    {
-      file: 'dist/use-request.umd.js',
-      name: 'useRequest',
-      format: 'umd',
-    },
-    {
-      file: 'dist/use-request.esm.js',
-      format: 'es',
-    },
-    {
-      file: 'dist/use-request.d.ts',
-      format: 'es',
-    },
-  ],
-  plugins: [
-    typescriptPlugin,
-    dtsPlugin,
-  ],
-};
+const config = [
+  {
+    input: 'src/index.ts',
+    output: [
+      {
+        file: 'dist/use-request.umd.js',
+        name: 'useRequest',
+        format: 'umd',
+      },
+      {
+        file: 'dist/use-request.esm.js',
+        format: 'es',
+      },
+    ],
+    plugins: [
+      typescriptPlugin,
+    ],
+  },
+  {
+    input: 'src/index.ts',
+    output: [
+      {
+        file: 'dist/use-request.d.ts',
+        format: 'es',
+      },
+    ],
+    plugins: [
+      dtsPlugin,
+    ],
+  },
+];
 
 export default config;
