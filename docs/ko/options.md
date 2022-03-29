@@ -2,7 +2,8 @@
 `useRequest`의 옵션으로 사용할 수 있는것들은 다음과 같습니다.
 * `initWith?: Data | null`
 * `cache?: boolean`
-* `ignoreWhenFetching?: boolean`
+* `dedupingFetching?: boolean`
+* `initWhenUndefined?: boolean`
 * ~~`UNSTABLE__suspense?: boolean`~~ (지원 예정입니다)
 
 ## initWith
@@ -104,15 +105,54 @@ const PostPage = () => {
 
 TODO
 
-> `cache`를 구현하는 [StateManager](./state.md)에 대한 내용은 [state.md](./state.md)를 확인해주세요.
+> `cache`를 구현하는 [Cache](./cache.md)에 대한 내용은 [cache.md](./cache.md)를 확인해주세요.
 
-## ignoreWhenFetching
-`ignoreWhenFetching` 옵션은 데이터를 불러오고 있을때, `useRequest.fetcher`를 여러번 호출하더라도 무시하는 옵션입니다.
+## dedupingFetching
+`dedupingFetching` 옵션은 데이터를 불러오고 있을때, `useRequest.fetcher`를 여러번 호출하더라도 무시하는 옵션입니다.
 
-동시에 같은 request를 여러번 보내는 경우는 거의 존재하지 않습니다. 일반적으로 UI의 반응성이 느려 사용자가 여러번 요청을 하게되는 경우가 대부분입니다.
-이 라이브러리는 UI 반응성이 느린 경우에 서버에 여러번 호출을 보내 부하를 거는 경우를 줄이기 위하여 이 옵션을 기본값으로 `true`로 설정하고 있습니다.
+동일한 엔드포인트에 `request`를 여러번 보내는 경우는 거의 존재하지 않습니다. 일반적으로 UI의 반응성이 느려 사용자가 여러번 요청을 하게되어 동일한 엔드포인트에 여러번 호출이 가는 경우가 대부분입니다.
 
-정말로 이 request를 병렬적으로 보낼 가능성이 있을 경우에만 `false`로 설정하는것을 추천합니다.
+`use-request`는 이러한 경우를 막을 수 있습니다. 동일한 요청을 보내는것을 막게되면, 백엔드의 비용도 낮아지게 됩니다. 따라서 `use-request`는 이 옵션을 기본값으로 `true`로 설정하고 있습니다.
+
+이때 실제로 이 옵션으로 호출을 무시하려면 아래와 같은 조건을 **모두** 만족해야합니다.
+1. 동일한 `id`의 `request`가 존재한다.
+1. 해당 `request`가 `isValidating`이 `true`인 상태이다.
+
+위의 두 조건에 만족했을때. `use-request`는 사용자가 요청한 fetch를 **무시**합니다. 
+
+## initWhenUndefined
+`initWhenUndefined`옵션은 `initWith` 옵션과 함께 이용됩니다.
+`initWith`옵션을 이용하여 훅이 사용되자 말자 `request`를 전송할때, `data`의 유무에 따라 요청을 조절할 수 있습니다.
+
+예를들어
+```tsx
+const Child = () => {
+  const { data } = useRequest(url, {
+    initWith: [],
+    initWhenUndefined: true,
+  });
+
+  return (
+    <div>
+      {data}
+    </div>
+  )
+};
+
+const Component = () => {
+  const [count, setCount] = useState(1);
+  
+  return (
+    <div>
+      {Array.from({ length: count }).map((_, index) => (
+        <Child key={index} />,
+      ))}
+      <button onClick={() => setCount((it) => it + 1)}>추가</button>
+    </div>
+  );
+};
+```
+위와 같은 경우에는 `Child`컴포넌트가 추가되더라도 **단 한번**의 `request`만 발생합니다. 만약 `initWhenUndefined`를 `false`로 바꾼다면, `Child` 컴포넌트가 마운트 될때마다 요청을 보냅니다.
 
 ## UNSTABLE__suspense
 `UNSTABLE__suspense`는 아직 구현되지 않은 옵션입니다. React Suspense를 지원하기 위해 만들어진 옵션입니다
