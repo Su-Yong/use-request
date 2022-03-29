@@ -14,15 +14,24 @@ const config = [
         file: 'dist/use-request.umd.js',
         name: 'useRequest',
         format: 'umd',
+        globals: {
+          'react': 'React',
+          'react/jsx-runtime': 'jsxRuntime',
+        },
       },
       {
         file: 'dist/use-request.esm.js',
         format: 'es',
+        globals: {
+          'react': 'React',
+          'react/jsx-runtime': 'jsxRuntime',
+        },
       },
     ],
     plugins: [
       typescriptPlugin,
     ],
+    external: ['react', 'react/jsx-runtime'],
   },
   {
     input: 'src/index.ts',

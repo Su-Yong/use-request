@@ -25,7 +25,7 @@ describe('Utils: mergeOptions', () => {
     });
     expect(target.cache).toBeUndefined();
     expect(target.fetcher).toBeUndefined();
-    expect(target.ignoreWhenFetching).toBeUndefined();
+    expect(target.dedupingFetching).toBeUndefined();
     expect(target.UNSTABLE__suspense).toBeUndefined();
 
     expect(result.initWith![0]).toEqual({
@@ -34,7 +34,7 @@ describe('Utils: mergeOptions', () => {
     });
     expect(result.cache).toBe(false);
     expect(result.fetcher).toBeUndefined();
-    expect(result.ignoreWhenFetching).toBeUndefined();
+    expect(result.dedupingFetching).toBeUndefined();
     expect(result.UNSTABLE__suspense).toBeUndefined();
   });
 
@@ -49,7 +49,7 @@ describe('Utils: mergeOptions', () => {
     });
     expect(target.cache).toBeUndefined();
     expect(target.fetcher).toBeUndefined();
-    expect(target.ignoreWhenFetching).toBeUndefined();
+    expect(target.dedupingFetching).toBeUndefined();
     expect(target.UNSTABLE__suspense).toBeUndefined();
 
     expect(result.initWith![0]).toEqual({
@@ -58,7 +58,7 @@ describe('Utils: mergeOptions', () => {
     });
     expect(result.cache).toBeUndefined();
     expect(result.fetcher).toBeUndefined();
-    expect(result.ignoreWhenFetching).toBeUndefined();
+    expect(result.dedupingFetching).toBeUndefined();
     expect(result.UNSTABLE__suspense).toBeUndefined();
   });
 
@@ -80,7 +80,7 @@ describe('Utils: mergeOptions', () => {
     });
     expect(target.cache).toBeUndefined();
     expect(target.fetcher).toBeUndefined();
-    expect(target.ignoreWhenFetching).toBeUndefined();
+    expect(target.dedupingFetching).toBeUndefined();
     expect(target.UNSTABLE__suspense).toBeUndefined();
 
     expect(result.initWith![0]).toEqual({
@@ -89,7 +89,7 @@ describe('Utils: mergeOptions', () => {
     });
     expect(result.cache).toBeUndefined();
     expect(result.fetcher).toBeUndefined();
-    expect(result.ignoreWhenFetching).toBeUndefined();
+    expect(result.dedupingFetching).toBeUndefined();
     expect(result.UNSTABLE__suspense).toBeUndefined();
   });
 
@@ -116,7 +116,7 @@ describe('Utils: mergeOptions', () => {
     });
     expect(target.cache).toBeUndefined();
     expect(target.fetcher).toBeUndefined();
-    expect(target.ignoreWhenFetching).toBeUndefined();
+    expect(target.dedupingFetching).toBeUndefined();
     expect(target.UNSTABLE__suspense).toBeUndefined();
 
     expect(result.initWith).toHaveLength(2);
@@ -130,25 +130,30 @@ describe('Utils: mergeOptions', () => {
     });
     expect(result.cache).toBeUndefined();
     expect(result.fetcher).toBeUndefined();
-    expect(result.ignoreWhenFetching).toBeUndefined();
+    expect(result.dedupingFetching).toBeUndefined();
     expect(result.UNSTABLE__suspense).toBeUndefined();
   });
 });
 
-describe('Utils: createOptions', () => {
+describe('Options: createOptions', () => {
   it('basic usage', () => {
     const option = createOptions({
       initWith: null,
       cache: false,
-      ignoreWhenFetching: true,
-    });
+      dedupingFetching: false,
+    }) as any;
 
-    // fetcher is function
-    expect(JSON.stringify(option)).toEqual(JSON.stringify({
+    const expectTo = {
       ...defaultOptions,
       initWith: null,
       cache: false,
-      ignoreWhenFetching: true,
-    }));
+      dedupingFetching: false,
+    };
+
+    delete option.fetcher;
+    delete expectTo.fetcher;
+
+    // fetcher is function
+    expect(option).toEqual(expectTo);
   });
 });

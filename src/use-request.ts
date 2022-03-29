@@ -52,17 +52,29 @@ const useRequest = <
     isValidating: initIsValidating || !!options.initWith,
   });
 
+  const changeState = useCallback((newState: State<Data, Err>) => {
+    const changed: string[] = [];
+    if (Object.hasOwnProperty.call(newState, 'data') && (changed.push('data') !== null)) ref.current.data = newState.data;
+    if (Object.hasOwnProperty.call(newState, 'error') && (changed.push('error') !== null)) ref.current.error = newState.error;
+    if (Object.hasOwnProperty.call(newState, 'isValidating') && (changed.push('isValidating') !== null)) ref.current.isValidating = newState.isValidating;
+
+    if (changed.some((it) => observed.current.has(it))) rerender();
+  }, [ref, observed]);
+
   const fetcher: RequestFetcher<RequestOptions<Data, FetchData>> = useCallback(async (...args) => {
-    if (options.dedupingFetching && configRef.current.cache.get(id)?.isValidating) {
-      return;
+    if (options.dedupingFetching) {
+      if (options.cache && configRef.current.cache.get(id)?.isValidating) return;
+      if (!options.cache && ref.current.isValidating) return;
     }
 
     setState('isValidating', true);
-    configRef.current.cache.set(id, {
-      data: ref.current.data,
-      error: ref.current.error,
-      isValidating: true,
-    });
+    if (options.cache) {
+      configRef.current.cache.set(id, {
+        data: ref.current.data,
+        error: ref.current.error,
+        isValidating: true,
+      });
+    }
 
     const newState: State<Data, Err> = await options.fetcher(url, ...args)
       .then((response) => ({
@@ -81,39 +93,30 @@ const useRequest = <
       configRef.current.cache.set(id, newState);
       broadcast(id, newState);
     } else {
-      if (Object.hasOwnProperty.call(newState, 'data')) ref.current.data = newState.data;
-      if (Object.hasOwnProperty.call(newState, 'error')) ref.current.error = newState.error;
-      if (Object.hasOwnProperty.call(newState, 'isValidating')) ref.current.isValidating = newState.isValidating;
-
-      rerender();
+      changeState(newState);
     }
-  }, [url, options, ref, mountRef, configRef]);
+  }, [url, options, ref, mountRef, configRef, changeState]);
   
   useEffect(() => {
     if (options.cache) {
-      const unsubscribe = subscribe<Data, Err>(id, (newState) => {
-        let check = [];
-        if (Object.hasOwnProperty.call(newState, 'data') && (check.push('data') !== null)) ref.current.data = newState.data;
-        if (Object.hasOwnProperty.call(newState, 'error') && (check.push('error') !== null)) ref.current.error = newState.error;
-        if (Object.hasOwnProperty.call(newState, 'isValidating') && (check.push('isValidating') !== null)) ref.current.isValidating = newState.isValidating;
-
-        if (check.some((it) => observed.current.has(it))) rerender();
-      });
+      const unsubscribe = subscribe<Data, Err>(id, changeState);
 
       return unsubscribe;
     }
-  }, [id, options.cache, ref, observed]);
+  }, [id, options.cache, ref, observed, changeState]);
 
   useEffect(() => {
     if (options.initWith) {
-      console.log(options.initWhenUndefined, !ref.current.data);
       if (options.initWhenUndefined) {
         if (!ref.current.data) {
-          console.log('run fetcher', options.initWith);
+          ref.current.isValidating = false;
           fetcher(...options.initWith);
+          ref.current.isValidating = true;
         }
       } else {
+        ref.current.isValidating = false;
         fetcher(...options.initWith);
+        ref.current.isValidating = true;
       }
     }
     // ignore deps

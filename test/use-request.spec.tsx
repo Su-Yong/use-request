@@ -308,11 +308,11 @@ describe('useRequest', () => {
     });
   });
 
-  it('option(ignoreWhenFetching: true)', async () => {
+  it('option(dedupingFetching: true)', async () => {
     const TestComponent = () => {
-      const { data, isValidating, fetcher } = useRequest('/ignoreWhenFetching', {
+      const { data, isValidating, fetcher } = useRequest('/dedupingFetching', {
         ...options,
-        ignoreWhenFetching: true,
+        dedupingFetching: true,
       });
 
       const click = () => {
@@ -338,15 +338,15 @@ describe('useRequest', () => {
     fireEvent.click(screen.getByTestId('button'));
     
     await waitFor(() => {
-      expect(screen.getByTestId('data')).toHaveTextContent(/^\/ignoreWhenFetching:main$/);
+      expect(screen.getByTestId('data')).toHaveTextContent(/^\/dedupingFetching:main$/);
     });
   });
 
-  it('option(ignoreWhenFetching: false)', async () => {
+  it('option(dedupingFetching: false)', async () => {
     const TestComponent = () => {
-      const { data, isValidating, fetcher } = useRequest('/ignoreWhenFetching', {
+      const { data, isValidating, fetcher } = useRequest('/dedupingFetching', {
         ...options,
-        ignoreWhenFetching: false,
+        dedupingFetching: false,
       });
 
       const click = () => {
@@ -372,7 +372,7 @@ describe('useRequest', () => {
     fireEvent.click(screen.getByTestId('button'));
     
     await waitFor(() => {
-      expect(screen.getByTestId('data')).toHaveTextContent(/^\/ignoreWhenFetching:validate$/);
+      expect(screen.getByTestId('data')).toHaveTextContent(/^\/dedupingFetching:validate$/);
     });
   });
 
