@@ -3,6 +3,7 @@ import React, { SetStateAction, useCallback, useMemo, useRef, useState } from 'r
 type Dispatch<T> = <Key extends keyof T>(key: Key, action: SetStateAction<T[Key]>) => void;
 type Mutate<T> = {
   ref: React.MutableRefObject<T>;
+  observed: React.MutableRefObject<Set<string>>;
   rerender: () => void;
 };
 
@@ -26,7 +27,7 @@ const useMemoState = <Value extends object>(initValue: Value): [Value, Dispatch<
   ) => {
     const newState = (
       actions instanceof Function
-        ? actions.call(this, value.current[key])
+        ? actions(value.current[key])
         : actions
     );
 
@@ -44,6 +45,7 @@ const useMemoState = <Value extends object>(initValue: Value): [Value, Dispatch<
     dispatcher,
     {
       ref: value,
+      observed,
       rerender: rerenderer,
     },
   ];

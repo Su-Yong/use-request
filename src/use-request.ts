@@ -34,6 +34,7 @@ const useRequest = <
 ): Requester<Data, Err, RequestOptions<Data, FetchData>> => {
   const config = useRequestConfig<Data, FetchData>();
   const mountRef = useRef(false);
+  const configRef = useRef(config);
 
   const id = useMemo(() => typeof key === 'string' ? key : key.id ?? key.url, [key]);
   const url = useMemo(() => typeof key === 'string' ? key : key.url, [key]);
@@ -45,18 +46,23 @@ const useRequest = <
     isValidating: initIsValidating,
   } = getCachedValue<Data, Err, FetchData>(id, options, config.cache);
 
-  const [result, setState, { ref, rerender }] = useMemoState<State<Data, Err>>({
+  const [result, setState, { ref, observed, rerender }] = useMemoState<State<Data, Err>>({
     data: initData,
     error: initError,
     isValidating: initIsValidating || !!options.initWith,
   });
 
   const fetcher: RequestFetcher<RequestOptions<Data, FetchData>> = useCallback(async (...args) => {
-    if (options.ignoreWhenFetching && ref.current.isValidating) {
+    if (options.dedupingFetching && configRef.current.cache.get(id)?.isValidating) {
       return;
     }
 
     setState('isValidating', true);
+    configRef.current.cache.set(id, {
+      data: ref.current.data,
+      error: ref.current.error,
+      isValidating: true,
+    });
 
     const newState: State<Data, Err> = await options.fetcher(url, ...args)
       .then((response) => ({
@@ -72,7 +78,7 @@ const useRequest = <
 
     if (!mountRef.current) return;
     if (options.cache) {
-      config.cache.set(id, newState);
+      configRef.current.cache.set(id, newState);
       broadcast(id, newState);
     } else {
       if (Object.hasOwnProperty.call(newState, 'data')) ref.current.data = newState.data;
@@ -81,28 +87,37 @@ const useRequest = <
 
       rerender();
     }
-  }, [url, options, ref, mountRef]);
+  }, [url, options, ref, mountRef, configRef]);
   
   useEffect(() => {
     if (options.cache) {
       const unsubscribe = subscribe<Data, Err>(id, (newState) => {
-        if (Object.hasOwnProperty.call(newState, 'data')) ref.current.data = newState.data;
-        if (Object.hasOwnProperty.call(newState, 'error')) ref.current.error = newState.error;
-        if (Object.hasOwnProperty.call(newState, 'isValidating')) ref.current.isValidating = newState.isValidating;
+        let check = [];
+        if (Object.hasOwnProperty.call(newState, 'data') && (check.push('data') !== null)) ref.current.data = newState.data;
+        if (Object.hasOwnProperty.call(newState, 'error') && (check.push('error') !== null)) ref.current.error = newState.error;
+        if (Object.hasOwnProperty.call(newState, 'isValidating') && (check.push('isValidating') !== null)) ref.current.isValidating = newState.isValidating;
 
-        rerender();
+        if (check.some((it) => observed.current.has(it))) rerender();
       });
 
       return unsubscribe;
     }
-  }, [id, options.cache, ref]);
+  }, [id, options.cache, ref, observed]);
 
   useEffect(() => {
     if (options.initWith) {
-      fetcher(...options.initWith);
+      console.log(options.initWhenUndefined, !ref.current.data);
+      if (options.initWhenUndefined) {
+        if (!ref.current.data) {
+          console.log('run fetcher', options.initWith);
+          fetcher(...options.initWith);
+        }
+      } else {
+        fetcher(...options.initWith);
+      }
     }
     // ignore deps
-  }, []);
+  }, [ref]);
 
   useEffect(() => {
     mountRef.current = true;

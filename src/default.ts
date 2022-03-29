@@ -17,7 +17,8 @@ export const defaultFetcher = async (
 export const defaultOptions: RequestOptions<any, any> = {
   initWith: undefined,
   cache: true,
-  ignoreWhenFetching: false,
+  dedupingFetching: true,
+  initWhenUndefined: true,
 
   UNSTABLE__suspense: false,
 
