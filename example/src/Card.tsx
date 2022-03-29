@@ -34,6 +34,7 @@ const Card = ({ post }: { post: Post }): JSX.Element => {
   const { data: user, fetcher: initUser } = useRequest<User>(server`/users/${post.userId}`, mergeOptions({
     initWith: [],
     ignoreWhenFetching: true,
+    // initWhenNotCached: true,
   }, Options.GET));
   const { data: comments, fetcher, isValidating } = useRequest<PostComment[]>(server`/comments?postId=${post.id}`, Options.GET);
 
