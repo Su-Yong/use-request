@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react';
 import { useRequest } from 'use-request';
 import Card from './Card';
 import { Post } from './types';
@@ -25,13 +26,23 @@ const containerStyle: React.CSSProperties = {
 };
 
 function App() {
-  const { data, error, isValidating } = useRequest<Post[]>(server`/posts`, {
-    ...Options.GET,
-    initWith: [],
+  const { data, error, isValidating, fetcher } = useRequest<Post[]>(server`/posts`, {
+    ...Options.GET_MUTATE,
+    initWith: [''],
   });
+
+  const [userId, setUserId] = useState('');
+
+  const onClick = useCallback(() => {
+    if (Number.isFinite(Number(userId))) {
+      fetcher(`?userId=${userId}`);
+    } else fetcher('');
+  }, [userId]);
 
   return (
     <div style={appStyle}>
+      <input value={userId} type={'number'} onChange={({ target }) => setUserId(target.value)} />
+      <button onClick={onClick}>load by userId</button>
       {isValidating && <div style={fullStyle}>loading...</div>}
       {error && <div style={fullStyle}>{error.name}: {error.message}</div>}
       {data && (

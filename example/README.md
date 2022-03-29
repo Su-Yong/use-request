@@ -1,7 +1,8 @@
 # Example for use-request
-basic example
+example for use-request
 
 # Installation
+`npm run build:parent`
 `npm install`
 
 # start
