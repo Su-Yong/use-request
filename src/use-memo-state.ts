@@ -1,9 +1,12 @@
-import { SetStateAction, useCallback, useMemo, useRef, useState } from "react";
+import React, { SetStateAction, useCallback, useMemo, useRef, useState } from 'react';
 
-type Dispatch<T> = (key: keyof T, action: SetStateAction<T[typeof key]>) => void;
-type Referer<T> = React.MutableRefObject<T>;
+type Dispatch<T> = <Key extends keyof T>(key: Key, action: SetStateAction<T[Key]>) => void;
+type Mutate<T> = {
+  ref: React.MutableRefObject<T>;
+  rerender: () => void;
+};
 
-const useMemoState = <Value extends object>(initValue: Value): [Value, Dispatch<Value>, Referer<Value>] => {
+const useMemoState = <Value extends object>(initValue: Value): [Value, Dispatch<Value>, Mutate<Value>] => {
   const value = useRef(initValue);
   const observed = useRef<Set<string>>(new Set());
 
@@ -17,27 +20,32 @@ const useMemoState = <Value extends object>(initValue: Value): [Value, Dispatch<
     },
   }), [value, observed]);
 
-  const dispatcher = useCallback((
-    key: keyof Value,
-    action: SetStateAction<Value[typeof key]>,
+  const dispatcher: Dispatch<Value> = useCallback((
+    key,
+    actions,
   ) => {
     const newState = (
-      action instanceof Function
-        ? action(value.current[key])
-        : action
+      actions instanceof Function
+        ? actions.call(this, value.current[key])
+        : actions
     );
 
-    value.current[key] = newState;
+    value.current[key as keyof Value] = newState;
 
     if (observed.current.has(key.toString())) {
       rerender({});
     }
   }, [value, observed]);
 
+  const rerenderer = useCallback(() => rerender({}), [rerender]);
+
   return [
     proxy,
     dispatcher,
-    value,
+    {
+      ref: value,
+      rerender: rerenderer,
+    },
   ];
 };
 

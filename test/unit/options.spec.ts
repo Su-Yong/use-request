@@ -1,6 +1,6 @@
 import { RequestOptions } from '../../src';
 import { defaultOptions } from '../../src/default';
-import { createOptions, mergeOptions } from '../../src/utils';
+import { createOptions, mergeOptions } from '../../src/options';
 
 const getTarget = (name: string): RequestOptions<string, { type: string, name: string }[]> => ({
   initWith: [
@@ -143,11 +143,12 @@ describe('Utils: createOptions', () => {
       ignoreWhenFetching: true,
     });
 
-    expect(option).toEqual({
+    // fetcher is function
+    expect(JSON.stringify(option)).toEqual(JSON.stringify({
       ...defaultOptions,
       initWith: null,
       cache: false,
       ignoreWhenFetching: true,
-    });
+    }));
   });
 });
