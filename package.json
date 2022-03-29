@@ -5,6 +5,7 @@
   "main": "dist/use-request.umd.js",
   "module": "dist/use-request.esm.js",
   "types": "dist/use-request.d.ts",
+  "files": ["dist/*"],
   "scripts": {
     "clean": "rimraf dist",
     "test": "jest",
