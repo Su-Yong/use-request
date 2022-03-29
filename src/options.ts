@@ -1,7 +1,9 @@
 export interface RequestOptions<Data, FetchData extends unknown[]> {
   initWith?: FetchData | undefined | null;
   cache?: boolean;
-  ignoreWhenFetching?: boolean;
+  ignoreWhenFetching?: boolean; // deprecated
+  // dedupingFetching?: boolean;
+  // initWhenNotCached?: boolean;
   UNSTABLE__suspense?: boolean; // UNSTABLE
 
   fetcher?: (url: string, ...args: FetchData) => Promise<Data>;

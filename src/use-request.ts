@@ -27,7 +27,7 @@ const getCachedValue = <Data, Err, FetchData extends unknown[]>(
 const useRequest = <
   Data = DefaultData,
   Err = DefaultError,
-  FetchData extends unknown[] = [],
+  FetchData extends unknown[] = any[],
 >(
   key: RequestKey,
   initOptions: RequestOptions<Data, FetchData> = {},
