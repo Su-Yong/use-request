@@ -1,6 +1,6 @@
 {
   "name": "@suyongs/use-request",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Data fetch library for React",
   "main": "dist/use-request.umd.js",
   "module": "dist/use-request.esm.js",
