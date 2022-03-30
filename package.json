@@ -5,7 +5,9 @@
   "main": "dist/use-request.umd.js",
   "module": "dist/use-request.esm.js",
   "types": "dist/use-request.d.ts",
-  "files": ["dist/*"],
+  "files": [
+    "dist/*"
+  ],
   "scripts": {
     "clean": "rimraf dist",
     "test": "jest",
@@ -13,7 +15,8 @@
     "build": "npm run clean && npm run build:only",
     "build:only": "rollup -c",
     "prepublish": "npm run test && npm run build",
-    "example:dev": "cd ./example && npm run dev"
+    "example:dev": "cd ./example && npm run dev",
+    "prepare": "husky install"
   },
   "keywords": [
     "react",
@@ -32,6 +35,7 @@
     "@testing-library/react-hooks": "^7.0.2",
     "@types/jest": "^27.4.1",
     "@types/react": "^17.0.41",
+    "husky": "^7.0.4",
     "jest": "^27.5.1",
     "react": "^17.0.2",
     "rollup": "^2.70.0",
