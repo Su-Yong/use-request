@@ -15,7 +15,8 @@
     "build": "npm run clean && npm run build:only",
     "build:only": "rollup -c",
     "prepublish": "npm run test && npm run build",
-    "example:dev": "cd ./example && npm run dev"
+    "example:dev": "cd ./example && npm run dev",
+    "release": "release-it"
   },
   "keywords": [
     "react",
@@ -37,6 +38,7 @@
     "husky": "^7.0.4",
     "jest": "^27.5.1",
     "react": "^17.0.2",
+    "release-it": "^14.13.1",
     "rollup": "^2.70.0",
     "rollup-plugin-dts": "^4.2.0",
     "ts-jest": "^27.1.3",
