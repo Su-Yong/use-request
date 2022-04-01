@@ -13,8 +13,8 @@ const config = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'Su-Yong', // Usually your GitHub org/user name.
-  projectName: 'use-request', // Usually your repo name.
+  organizationName: 'Su-Yong',
+  projectName: 'use-request',
 
   i18n: {
     defaultLocale: 'en',
@@ -28,7 +28,7 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/Su-Yong/use-request',
+          editUrl: 'https://github.com/Su-Yong/use-request/blob/docs/website/docs',
         },
         blog: false,
         theme: {
@@ -41,10 +41,9 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      hideableSidebar: true,
       autoCollapseSidebarCategories: true,
       navbar: {
-        title: 'use-request Documents',
+        title: 'use-request',
         logo: {
           alt: 'use-request Logo',
           src: 'img/logo.svg',
