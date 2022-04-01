@@ -1,8 +1,3 @@
----
-id: request-config
-title: RequestConfig
----
-
 # RequestConfig
 
 > TODO
