@@ -1,3 +1,8 @@
+---
+id: intro
+title: use-request
+---
+
 # use-request
 Zero dependency data fetch library for React
 
@@ -54,11 +59,3 @@ const Component = () => {
   );
 };
 ```
-
-# [Document](https://su-yong.github.io/use-request)
-Go to [Document](https://su-yong.github.io/use-request)
-
-# [Contributors](https://github.com/Su-Yong/use-request/contributors)
-|[Su-Yong](https://github.com/Su-Yong)|
-|---|
-|<img width="100px" height="100px" src="https://github.com/Su-Yong.png"/>|

@@ -1,21 +1,26 @@
+---
+id: intro
+title: use-request
+---
+
 # use-request
-Zero dependency data fetch library for React
+의존성 없는 React를 위한 Data Fetch 라이브러리
 
-# Features
-* Zero dependency
-* Small bundle size (~25KB)
-* Prevent useless rerender
-* Support TypeScript
-* Support ReactNative
+# 특징
+* 의존성 없음
+* 작은 번들 사이즈 (~25KB)
+* 불필요한 리렌더링 없음
+* TypeScript 지원
+* ReactNative 지원
 
-# Installation
+# 설치
 `npm install @suyongs/use-request`
 
-or
+혹은
 
 `yarn add @suyongs/use-request`
 
-# Usage
+# 사용법
 ```tsx
 interface Post {
   title: string;
@@ -48,17 +53,9 @@ const Component = () => {
 
   return (
     <div>
-      {data && <div>Upload Success</div>}
-      <button onClick={onClick}>Upload</button>
+      {data && <div>업로드 성공</div>}
+      <button onClick={onClick}>업로드</button>
     </div>
   );
 };
 ```
-
-# [Document](https://su-yong.github.io/use-request)
-Go to [Document](https://su-yong.github.io/use-request)
-
-# [Contributors](https://github.com/Su-Yong/use-request/contributors)
-|[Su-Yong](https://github.com/Su-Yong)|
-|---|
-|<img width="100px" height="100px" src="https://github.com/Su-Yong.png"/>|
