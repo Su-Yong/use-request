@@ -1,10 +1,17 @@
+---
+id: intro
+title: use-request
+---
+
 # use-request
 Zero dependency data fetch library for React
 
 # Features
 * Zero dependency
-* Support TypeScript
+* Small bundle size (~25KB)
 * Prevent useless rerender
+* Support TypeScript
+* Support ReactNative
 
 # Installation
 `npm install @suyongs/use-request`
@@ -21,16 +28,20 @@ interface Post {
   author: string;
 }
 
-const fetcher = (url, body) => fetch(url, {
-  method: 'POST',
-  body: JSON.stringify(body),
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const fetcher = async (url, body: Post): Promise<Post> => {
+  const reponse = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  return response.json();
+};
 
 const Component = () => {
-  const { data, fetcher } = useRequest<Post, Error, [Post]>('https://example.com/upload', { fetcher });
+  const { data, fetcher } = useRequest('https://example.com/upload', { fetcher });
 
   const onClick = () => {
     fetcher({
@@ -48,11 +59,3 @@ const Component = () => {
   );
 };
 ```
-
-# [Document](docs/index.md)
-Go to [Document](docs/index.md)
-
-# [Contributors](https://github.com/Su-Yong/use-request/contributors)
-|[Su-Yong](https://github.com/Su-Yong)|
-|---|
-|<img width="100px" height="100px" src="https://github.com/Su-Yong.png"/>|
