@@ -104,7 +104,7 @@ const PostPage = () => {
 .
 따라서 `initWith: null` 옵션은, 캐싱 능력과 관계없이 컴포넌트가 마운트 될때마다 임시로 초기화 하여 특정 **request**를 사용하는 컴포넌트들의 **시작지점**을 만드는 역할을 합니다.
 
-이보다 훨씬 복잡한 경우에는 `RequestConfigProvider`를 이용하여 `StateManager`를 새로 정의해주는 방식이 더 좋을 수 있습니다. 그렇지만 `Provider`는 너무 번거롭기 때문에 우리는 이와 같이 Shortcut을 사용할 수 있습니다.
+이보다 훨씬 복잡한 경우에는 `RequestConfig`를 이용하여 `cache`를 따로 전달하는 방식이 더 좋을 수 있습니다. 그렇지만 `RequestConfig`를 사용하기에는 너무 번거롭기 때문에 우리는 이와 같이 Shortcut을 사용할 수 있습니다.
 
 ## cache
 `cache` 옵션은 서로 다른 `useRequest`간에 데이터를 동기화 할건지에 대한 여부를 설정합니다.

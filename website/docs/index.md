@@ -53,7 +53,7 @@ const Component = () => {
 
   return (
     <div>
-      {data && <div>upload success</div>}
+      {data && <div>Upload Success</div>}
       <button onClick={onClick}>Upload</button>
     </div>
   );

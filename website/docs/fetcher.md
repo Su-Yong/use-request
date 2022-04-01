@@ -1,65 +1,110 @@
+---
+id: fetcher
+title: Fetcher
+---
+
 # Fetcher
-여기서 언급되는 **fetcher**는 크게 두가지 입니다.
-
-1. `RequestOption`에 사용되는 **fetcher**
-1. `useRequest`의 반환 값을 분해하여 사용되는 **fetcher**
-
-여기서는 **1번**의 **fetcher**를 기준으로 서술하고 있습니다. **2번**의 **fetcher**를 언급할때는 `useRequest.fetcher` 라고 표기를 하겠습니다.
-
-## **fetcher**의 타입
-**fetcher**의 첫번째 인자는 항상 `url: string`으로 고정되어 있습니다. 그 다음 인자는 어떠한 인자가 와도 괜찮습니다. 실제 Type 정의는 아래와 같습니다
-
+`Fetcher` is actually a function that sends a `request`. Since `use-request` has **Built-in** `Fetcher` by default, `fetcher` can be used directly in [previous example](start). But the default `fetcher` is not universal. So, `use-request` allows you to customize `Fetcher`.
 ```tsx
-interface RequestOptions<Data, FetchData extends unknown[]> {
-  // ...
-  fetcher?: (url: string, ...args: FetchData) => Promise<Data>;
-  // ...
-}
+const { data, fetcher } = useRequest(url);
 ```
+we have used `useRequest` as above. But what if you want to receive response as text instead of JSON?
 
-## RESTful의 경우
-일반적으로 RESTful한 API를 사용하는 경우에는 다음과 같이 **fetcher**를 정의하는 것이 권장됩니다.
+## Basic
 
+First, let's create a function that just receives text.
 ```tsx
-const fetcher = async (url, body, method = 'POST', headers = {}) => fetch(url, {
-  method,
-  body: JSON.stringify(body),
-  headers: {
-    'Content-Type': 'application/json',
-    ...headers,
-  },
-});
+const textFetcher = async () => {
+  const response = await fetch(url);
+
+  return response.text();
+};
 ```
+I made a function that simply uses [fetch](https://developer.mozilla.org/en-US/docs/Web/API/fetch) to get the response as text.
 
-위와 같이 사용한 경우에는 `useRequest.fetcher`는 아래와 같이 사용이 가능합니다.
+Let's put the url as an argument to the `textFetcher` function.
+```tsx {1}
+const textFetcher = async (url) => {
+  const response = await fetch(url);
+
+  return response.text();
+};
+```
+The `textFetcher` function created in this way returns text when called like `await textFetcher(URL);`. Now let's provide this to `useRequest`.
 
 ```tsx
-const { fetcher } = useRequest(url, options);
+const { data, fetcher } = useRequest(url, { fetcher: textFetcher });
+```
+We made it. Just pass `textFetcher` to the key `fetcher` like this. Now `data` becomes `string`.
 
+## Passing Data
+
+But this is not enough. We usually have to put data somewhere when we send a `POST` request. The `textFetcher` we created above cannot send any additional data. Then how about editing `textFetcher` like this?
+```tsx {1,3-7}
+const textFetcher = async (url, body) => {
+  const response = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  return response.text();
+};
+```
+Editing like above, additional data can be sent when calling `textFetcher`. And `useRequest` will also be able to send data.
+
+```tsx
+const { data, fetcher } = useRequest(url, { fetcher: textFetcher });
 // ...
-
-fetcher({
-  data: 'value',
-  data2: 'value',
-});
+fetcher({ data: 'test' });
 ```
+Pay attention to passing `object` when calling `fetcher`. The argument you put in `fetcher` is the same as the second argument in `textFetcher`.
 
-물론 다음과 같이 사용도 가능합니다
+So, how about changing it like this?
+```tsx {1,3,17}
+const textFetcher = async (url, body, method) => {
+  const response = await fetch(url, {
+    method,
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 
-```tsx
-fetcher(
-  {
-    data: 'value',
-    data2: 'value',
-  },
-  'PATCH',
-  {
-    Authorization: token,
-  },
-);
+  return response.text();
+};
+
+/* ---------- */
+
+const { data, fetcher } = useRequest(url, { fetcher: textFetcher });
+// ...
+fetcher({ data: 'test' }, 'POST');
 ```
+It works as we expected! The value `'POST'` is passed to the `method` of `textFetcher`.
 
-또한 이 **fetcher**는 현재 이 라이브러리의 기본 **fetcher** 입니다. `options`을 주지 않을 경우 위 설명에서 보였던 **fetcher**를 사용하게 됩니다.
+Finally, would it still works even if change the function like this?
+```tsx {1,3,7,18}
+const textFetcher = async (url, body, method = 'POST', headers = {}) => {
+  const response = await fetch(url, {
+    method,
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+  });
 
-## GraphQL의 경우
-**TODO**: 곧 작성할 예정입니다.
+  return response.text();
+};
+
+/* ---------- */
+
+const { data, fetcher } = useRequest(url, { fetcher: textFetcher });
+// ...
+fetcher({ data: 'test' }, 'POST', { Authorization: `bearer ${token}` });
+```
+`defaultParameter` also works. Do not forget it. All arguments **same** except for the first argument of `fetcher`, which takes the argument of `useRequest.fetcher` as an option.
+
+And if we replace `return response.text();` as `return response.json();` in the `textFetcher`, it becomes the default `fetcher` provided by `use-request`.

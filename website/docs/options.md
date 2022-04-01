@@ -1,13 +1,18 @@
-# 옵션
-`useRequest`의 옵션으로 사용할 수 있는것들은 다음과 같습니다.
+---
+id: options
+title: Options
+---
+
+# Options
+The options available for `useRequest`.
 * `initWith?: Data | null`
 * `cache?: boolean`
 * `dedupingFetching?: boolean`
 * `initWhenUndefined?: boolean`
-* ~~`UNSTABLE__suspense?: boolean`~~ (지원 예정입니다)
+* ~~`UNSTABLE__suspense?: boolean`~~ (SOON)
 
 ## initWith
-`initWith` 옵션은 컴포넌트가 마운트 될때 동시에 바로 요청을 보내는 옵션입니다. `initWith`필드에 **request** 보낼 인자들을 배열로 작성하면 **fetcher**에 해당 데이터를 전달하여 **request**를 보냅니다.
+The `initWith` option sends a request immediately when the component is mounted. If you write the arguments to send **request** in the `initWith` field as an array, you send the **request** by passing the data to **fetcher**.
 
 ```tsx
 const Component = () => {
@@ -23,25 +28,25 @@ const Component = () => {
 
   return (
     <div>
-      {!data && '데이터를 가져오는 중입니다...'}
-      {data && `결과: ${data}`}
+      {!data && 'Fetching data...'}
+      {data && `Result: ${data}`}
     </div>
   );
 };
 ```
+Contrary to the above, if you omit `initWith` or put `undefined`, you get a cached value.
 
-위와는 다르게, `initWith`를 생략하거나 `undefined`를 넣게 되면 캐싱된 값을 가져오게 됩니다.
+Also, if you put `null` in `initWith`, even if previously cached data exists, `useRequest` does not load cached data when the component is mounted.
 
-또한 `initWith`에 `null`을 넣게 되면 이전에 캐시된 데이터가 존재하더라도 컴포넌트가 마운트 될때 `useRequest`는 캐시된 데이터를 불러오지 않습니다.
+:::caution
+`initWith` recognizes `null` and `undefined` differently. Omitting `initWith` has the same action as putting `undefined`, but `null` and `undefined` have different actions.
+:::
 
-> `initWith`는 `null` 과 `undefined`를 다르게 인식합니다. `initWith`를 생략하는것은 `undefined`를 넣는것과 동일한 동작을 하지만, `null`과 `undefined`는 다른 동작을 수행합니다.
+You might think that putting this `null' value is useless, but for a set of components, it works very well.
 
-이 `null`값을 넣는 행위가 쓸모없다고 생각할 수 있지만 컴포넌트 집합에서 이는 굉장히 유리하게 동작합니다.
+For example, you want to create a component that uploads and edits a post defined as the following type.
 
-예를들어 아래와 같은 타입으로 정의된 글을 업로드 하고 수정하는 컴포넌트를 만든다고 가정합시다.
-
-* Post.tsx
-```tsx
+```tsx title="src/Post.ts"
 interface Post {
   title: string;
   author: string;
@@ -49,8 +54,7 @@ interface Post {
 }
 ```
 
-* Main.tsx
-```tsx
+```tsx title="src/Main.tsx"
 const UploadButton = ({ code, data }) => {
   const [captcha, setCaptcha] = useState('');
   const { fetcher, isValidating } = useRequest(url, options);
@@ -89,43 +93,44 @@ const PostPage = () => {
           <input value={post.content} onChange={({ target }) => setPost((it) => ({ ...it, content: target.value }))} />
         </>
       )}
-      {error && '오류가 났어요 새로고침 해보실래요?'}
+      {error && 'Error! try refresh'}
       <UploadButton code={'TEST'} data={post} />
     </div>
   );
 };
 ```
-위와 같이 컴포넌트를 제작한 경우에는 `useRequest`의 캐싱 능력을 사용하여 두 컴포넌트가 분리되어 있더라도 동일한 결과를 받을 수 있게해야합니다. 하지만 캐시된 데이터를 가져오게 되면, 메인 컴포넌트가 **unmount** 되고 다시 **mount** 되더라도 `useRequest`의 초기 값이 비어있는것이 아니라 이전에 시도했던 **request**의 결과를 갖게 됩니다.
-따라서 `initWith: null` 옵션은, 캐싱 능력과 관계없이 컴포넌트가 마운트 될때마다 임시로 초기화 하여 특정 **request**를 사용하는 컴포넌트들의 **시작지점**을 만드는 역할을 합니다.
+If you create a component as above, you should use the caching ability of `useRequest` so that the same result can be received even if the two components are separated. However, when the cached data is fetched, even if the main component is **unmounted** and **mounted** again, the initial value of `useRequest` is not empty, but the result of the previously attempted **request**.
 
-이보다 훨씬 복잡한 경우에는 `RequestConfigProvider`를 이용하여 `StateManager`를 새로 정의해주는 방식이 더 좋을 수 있습니다. 그렇지만 `Provider`는 너무 번거롭기 때문에 우리는 이와 같이 Shortcut을 사용할 수 있습니다.
+Therefore, the `initWith: null` option serves to create a **start point** for components that use a specific **request** by temporarily initializing them whenever a component is mounted, regardless of caching capabilities.
+
+In a much more complex case, it may be better to provide a new [`Cache`](cache) object using `RequestConfig`. But since `RequestConfig` is too complex, we can use Shortcut like this.
 
 ## cache
-`cache` 옵션은 서로 다른 `useRequest`간에 데이터를 동기화 할건지에 대한 여부를 설정합니다.
+The `cache` option sets whether or not to synchronize data between different `useRequest`.
 
-TODO
-
-> `cache`를 구현하는 [Cache](./cache.md)에 대한 내용은 [cache.md](./cache.md)를 확인해주세요.
+:::info
+For information on [Cache](./cache.md) implementing `cache`, please check [cache.md](./cache.md).
+:::
 
 ## dedupingFetching
-`dedupingFetching` 옵션은 데이터를 불러오고 있을때, `useRequest.fetcher`를 여러번 호출하더라도 무시하는 옵션입니다.
+The `dedupingFetching` option is an option to ignore even if `useRequest.fetcher` is called multiple times when data is being fetched.
 
-동일한 엔드포인트에 `request`를 여러번 보내는 경우는 거의 존재하지 않습니다. 일반적으로 UI의 반응성이 느려 사용자가 여러번 요청을 하게되어 동일한 엔드포인트에 여러번 호출이 가는 경우가 대부분입니다.
+Sending a `request' multiple times to the same endpoint is rare. In general, the user makes multiple requests due to the slow response of the UI.
 
-`use-request`는 이러한 경우를 막을 수 있습니다. 동일한 요청을 보내는것을 막게되면, 백엔드의 비용도 낮아지게 됩니다. 따라서 `use-request`는 이 옵션을 기본값으로 `true`로 설정하고 있습니다.
+`use-request` can prevent this case. Avoiding sending the same request also lowers the cost of the backend. So `use-request` is setting this option to `true` by default.
 
-이때 실제로 이 옵션으로 호출을 무시하려면 아래와 같은 조건을 **모두** 만족해야합니다.
-1. 동일한 `id`의 `request`가 존재한다.
-1. 해당 `request`가 `isValidating`이 `true`인 상태이다.
+In this case, in order to actually ignore the call with this option, **all** of the conditions below must be satisfied.
+1. A `request` with the same `id` exists.
+1. The corresponding `request` is in a state where `isValidating` is `true`.
 
-위의 두 조건에 만족했을때. `use-request`는 사용자가 요청한 fetch를 **무시**합니다. 
+When the above two conditions are satisfied. `use-request` will **ignore** any fetch requested by the user.
 
 ## initWhenUndefined
-`initWhenUndefined`옵션은 `initWith` 옵션과 함께 이용됩니다.
-`initWith`옵션을 이용하여 훅이 사용되자 말자 `request`를 전송할때, `data`의 유무에 따라 요청을 조절할 수 있습니다.
+The `initWhenUndefined` option is used with the `initWith` option.
+When sending a `request` as soon as the component is mounted using the `initWith` option, you can suppress `request` according to the existence of `data`.
 
-예를들어
-```tsx
+For example
+```tsx title="src/Child.tsx"
 const Child = () => {
   const { data } = useRequest(url, {
     initWith: [],
@@ -138,6 +143,11 @@ const Child = () => {
     </div>
   )
 };
+
+export default Child;
+```
+```tsx title="src/Component.tsx"
+import Child from './Child';
 
 const Component = () => {
   const [count, setCount] = useState(1);
@@ -152,7 +162,9 @@ const Component = () => {
   );
 };
 ```
-위와 같은 경우에는 `Child`컴포넌트가 추가되더라도 **단 한번**의 `request`만 발생합니다. 만약 `initWhenUndefined`를 `false`로 바꾼다면, `Child` 컴포넌트가 마운트 될때마다 요청을 보냅니다.
+In the above case, even if the `Child` component is added, only **ONE** `request` occurs. If you change `initWhenUndefined` to `false`, a request will be sent whenever the `Child` component is mounted.
 
 ## UNSTABLE__suspense
-`UNSTABLE__suspense`는 아직 구현되지 않은 옵션입니다. React Suspense를 지원하기 위해 만들어진 옵션입니다
+:::info
+`UNSTABLE__suspense` is not yet implemented. This option was created to support React Suspense in the future.
+:::
