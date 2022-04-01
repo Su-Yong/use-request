@@ -14,9 +14,11 @@
     "test:coverage": "jest --coverage",
     "build": "npm run clean && npm run build:only",
     "build:only": "rollup -c",
+    "build:docs": "cd ./website && npm run build",
     "prepublish": "npm run test && npm run build",
     "example:dev": "cd ./example && npm run dev",
-    "release": "release-it"
+    "release": "release-it",
+    "docs": "cd ./website && npm run start"
   },
   "keywords": [
     "react",
