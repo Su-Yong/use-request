@@ -9,7 +9,7 @@ const config = {
   title: 'use-request',
   tagline: 'test',
   url: 'https://Su-Yong.github.io',
-  baseUrl: '/',
+  baseUrl: '/use-request/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/icon.svg',
@@ -70,7 +70,7 @@ const config = {
             items: [
               {
                 label: 'Intro',
-                to: '/docs/intro',
+                to: '/docs',
               },
             ],
           },
