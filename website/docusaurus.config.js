@@ -8,11 +8,11 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'use-request',
   tagline: 'test',
-  url: 'https://your-docusaurus-test-site.com',
+  url: 'https://Su-Yong.github.io',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/icon.svg',
   organizationName: 'Su-Yong',
   projectName: 'use-request',
 
@@ -44,10 +44,6 @@ const config = {
       autoCollapseSidebarCategories: true,
       navbar: {
         title: 'use-request',
-        logo: {
-          alt: 'use-request Logo',
-          src: 'img/logo.svg',
-        },
         items: [
           {
             type: 'doc',
