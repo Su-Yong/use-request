@@ -7,11 +7,11 @@ Zero dependency data fetch library for React
 * Prevent useless rerender
 
 # Installation
-`npm install use-request`
+`npm install @suyongs/use-request`
 
 or
 
-`yarn add use-request`
+`yarn add @suyongs/use-request`
 
 # Usage
 ```tsx

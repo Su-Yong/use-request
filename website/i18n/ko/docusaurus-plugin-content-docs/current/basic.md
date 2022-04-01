@@ -1,3 +1,8 @@
+---
+id: start
+title: 시작
+---
+
 # 시작
 이 라이브러리는 React를 사용하는 프로젝트에서 사용 가능합니다.
 
@@ -101,4 +106,6 @@ const Parent = () => {
 ```
 예제 처럼 다른 컴포넌트이지만 같은 URL을 사용하고 있다면 그 값이 **동기화**됩니다. 또한 `Parent` 컴포넌트의 총 렌더링 횟수는 `data`가 변경된 횟수입니다. 여기서  `use-request`의 특징이 드러납니다. `useRequest`는 오직 사용한 프로퍼티가 업데이트 되어야 리렌더링을 발생시킵니다.
 
-> 물론 **URL**이 같지만 개별적으로 **request**를 보낼 수도 있습니다. `use-request`는 그점을 이해하고 있기때문에 [cache](./options.md#cache) 옵션과 [RequestConfig](./request-config.md)를 지원하고 있습니다.
+:::info
+물론 **URL**이 같지만 개별적으로 **request**를 보낼 수도 있습니다. `use-request`도 그 점을 잘 알기 때문에 [cache](options#cache) 옵션과 [RequestConfig](request-config)를 지원하고 있습니다.
+:::
