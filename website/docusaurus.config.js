@@ -2,6 +2,8 @@
 // Note: type annotations allow type checking and IDEs autocompletion
 require('dotenv').config();
 
+const path = require('path');
+
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/vsDark');
 
@@ -21,6 +23,20 @@ const config = {
     defaultLocale: 'en',
     locales: ['en', 'ko'],
   },
+
+  themes: ['@docusaurus/theme-live-codeblock'],
+
+  plugins: [
+    [
+      'docusaurus-plugin-module-alias',
+      {
+        alias: {
+          react: path.resolve('./node_modules/react'),
+          'react-dom': path.resolve('./node_modules/react-dom'),
+        }
+      }
+    ]
+  ],
 
   presets: [
     [

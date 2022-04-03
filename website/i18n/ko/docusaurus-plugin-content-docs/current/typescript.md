@@ -69,11 +69,5 @@ const { data, error, fetcher } = useRequest<string, Error, [unknown]>('url', { f
 ```
 
 ## Options
-`use-request`는 옵션또한 쉽게 사용할 수 있도록 `createOptions`라는 메소드를 제공하고 있습니다.
 
-```tsx
-const options = createOptions({
-  cache: false,
-});
-```
-위와 같이 `createOptions`을 사용한 경우에는 
+> TODO
