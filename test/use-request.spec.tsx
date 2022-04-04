@@ -65,7 +65,7 @@ describe('useRequest', () => {
 
   it('option(initWith: Data)', async () => {
     const TestComponent = () => {
-      const { data, isValidating, fetcher } = useRequest('/initWith', {
+      const { data, isValidating } = useRequest('/initWith', {
         ...options,
         initWith: ['initWith'],
       });
