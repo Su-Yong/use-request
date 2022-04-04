@@ -208,6 +208,63 @@ describe('useRequest', () => {
     expect(screen.getByTestId('validate')).toHaveTextContent(/^false$/);
   });
 
+  it('option(cache: Data)', async () => {
+    const newCache = new Map();
+    const TestComponent2 = React.memo(() => {
+      const { fetcher } = useRequest('/cache', {
+        ...options,
+        cache: newCache,
+      });
+
+      const click = () => {
+        fetcher('sub');
+      }
+
+      return (
+        <button data-testid={'sub-button'} onClick={click} />
+      )
+    });
+
+    const TestComponent = () => {
+      const { data, fetcher } = useRequest('/cache', {
+        ...options,
+        cache: newCache,
+      });
+
+      const click = () => {
+        fetcher('main');
+      }
+
+      return (
+        <div>
+          <div data-testid={'data'}>{data}</div>
+          <TestComponent2 />
+          <button data-testid={'main-button'} onClick={click} />
+        </div>
+      );
+    };
+
+    render(
+      <RequestConfig cache={cache}>
+        <TestComponent />
+      </RequestConfig>
+    );
+    expect(screen.getByTestId('data')).toHaveTextContent(/^$/);
+
+    fireEvent.click(screen.getByTestId('sub-button'));
+    await waitFor(() => {
+      expect(screen.getByTestId('data')).toHaveTextContent(/^\/cache:sub$/);
+    });
+
+    fireEvent.click(screen.getByTestId('main-button'));
+    await waitFor(() => {
+      expect(screen.getByTestId('data')).toHaveTextContent(/^\/cache:main$/);
+    
+      expect(cache.get('/cache')?.data).toBeUndefined();
+      expect(newCache.get('/cache')?.data).toEqual('/cache:main');
+    });
+  });
+
   it('option(cache: true)', async () => {
     const TestComponent2 = React.memo(() => {
       const { fetcher } = useRequest('/cache', options);

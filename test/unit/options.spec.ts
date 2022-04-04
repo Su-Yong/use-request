@@ -1,6 +1,4 @@
-import { RequestOptions } from '../../src';
-import { defaultOptions } from '../../src/default';
-import { createOptions, mergeOptions } from '../../src/options';
+import { createOptions, defaultOptions, mergeOptions, RequestOptions } from '../../src';
 
 const getTarget = (name: string): RequestOptions<string, { type: string, name: string }[]> => ({
   initWith: [
