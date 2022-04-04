@@ -1,15 +1,18 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
+require('dotenv').config();
+
+const path = require('path');
 
 const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const darkCodeTheme = require('prism-react-renderer/themes/vsDark');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'use-request',
-  tagline: 'test',
+  tagline: 'Zero dependency data fetch library for React ',
   url: 'https://Su-Yong.github.io',
-  baseUrl: '/use-request/',
+  baseUrl: process.env.NODE_ENV === 'production' ? '/use-request/' : '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/icon.svg',
@@ -21,6 +24,20 @@ const config = {
     locales: ['en', 'ko'],
   },
 
+  themes: ['@docusaurus/theme-live-codeblock'],
+
+  plugins: [
+    [
+      'docusaurus-plugin-module-alias',
+      {
+        alias: {
+          react: path.resolve('./node_modules/react'),
+          'react-dom': path.resolve('./node_modules/react-dom'),
+        }
+      }
+    ]
+  ],
+
   presets: [
     [
       'classic',
@@ -29,8 +46,19 @@ const config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl: 'https://github.com/Su-Yong/use-request/blob/docs/website/docs',
+          remarkPlugins: [
+            [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
+          ],
+        },
+        pages: {
+          remarkPlugins: [
+            require('@docusaurus/remark-plugin-npm2yarn'),
+          ]
         },
         blog: false,
+        sitemap: {
+          
+        },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
@@ -42,6 +70,12 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       autoCollapseSidebarCategories: true,
+      algolia: {
+        appId: process.env.APPLICATION_ID,
+        apiKey: process.env.API_SEARCH_KEY,
+        indexName: 'search',
+        contextualSearch: true,
+      },
       navbar: {
         title: 'use-request',
         items: [

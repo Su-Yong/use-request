@@ -18,14 +18,14 @@ export const defaultFetcher = async (
   body: any,
   method = 'POST',
   headers = {},
-) => fetch(url, {
+) => (await fetch(url, {
   method,
   body: JSON.stringify(body),
   headers: {
     'Content-Type': 'application/json',
     ...headers,
   },
-});
+})).json();
 
 export const defaultOptions: RequiredRequestOptions<any, any> = {
   initWith: undefined,
