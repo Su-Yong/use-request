@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { createOptions, mergeOptions, RequestOptions } from './options';
-import { RequestConfigType, useRequestConfig } from './request-config';
+import { createOptions, mergeOptions } from './options';
+import { useRequestConfig } from './request-config';
 import { broadcast, subscribe } from './subscribe';
-
-import { DefaultData, DefaultError, State, Requester, RequestFetcher, RequestKey } from './types';
 import useMemoState from './use-memo-state';
+
+import type { RequestOptions } from './options';
+import type { RequestConfigType } from './request-config';
+import type { DefaultData, DefaultError, State, Requester, RequestFetcher, RequestKey } from './types';
 
 const getCachedValue = <Data, Err, FetchData extends unknown[]>(
   id: string | undefined,
@@ -54,9 +56,10 @@ const useRequest = <
 
   const changeState = useCallback((newState: State<Data, Err>) => {
     const changed: string[] = [];
-    if (Object.hasOwnProperty.call(newState, 'data') && (changed.push('data') !== null)) ref.current.data = newState.data;
-    if (Object.hasOwnProperty.call(newState, 'error') && (changed.push('error') !== null)) ref.current.error = newState.error;
-    if (Object.hasOwnProperty.call(newState, 'isValidating') && (changed.push('isValidating') !== null)) ref.current.isValidating = newState.isValidating;
+    // state가 바뀌지 않은 경우에는 object reference가 항상 같음
+    if (Object.hasOwnProperty.call(newState, 'data') && ref.current.data !== newState.data && (changed.push('data') !== null)) ref.current.data = newState.data;
+    if (Object.hasOwnProperty.call(newState, 'error') && ref.current.error !== newState.error && (changed.push('error') !== null)) ref.current.error = newState.error;
+    if (Object.hasOwnProperty.call(newState, 'isValidating') && ref.current.isValidating !== newState.isValidating && (changed.push('isValidating') !== null)) ref.current.isValidating = newState.isValidating;
 
     if (changed.some((it) => observed.current.has(it))) rerender();
   }, [ref, observed]);
@@ -75,11 +78,13 @@ const useRequest = <
           : options.cache
       );
  
-      nowCache.set(id, {
+      const newState = {
         data: ref.current.data,
         error: ref.current.error,
         isValidating: true,
-      });
+      };
+      nowCache.set(id, newState);
+      broadcast(id, newState);
     }
 
     const newState: State<Data, Err> = await options.fetcher(url, ...args)
