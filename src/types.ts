@@ -1,4 +1,4 @@
-import { RequestOptions } from './options';
+import type { RequestOptions } from './options';
 
 export type DefaultData = any;
 export type DefaultError = Error;

@@ -1,4 +1,4 @@
-import { State } from './types';
+import type { State } from './types';
 
 export type Listener<Data, Err> = (state: State<Data, Err>) => void;
 

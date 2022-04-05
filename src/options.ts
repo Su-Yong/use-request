@@ -1,4 +1,4 @@
-import { State } from './types';
+import type { State } from './types';
 import type { Cache } from './request-config';
 
 export interface RequestOptions<Data, FetchData extends unknown[]> {

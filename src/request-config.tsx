@@ -1,6 +1,8 @@
 import React, { useContext, useMemo } from 'react';
-import { State } from './types';
-import { createOptions, RequestOptions, RequiredRequestOptions, defaultOptions } from './options';
+import { createOptions, defaultOptions } from './options';
+
+import type { RequestOptions, RequiredRequestOptions } from './options';
+import type { State } from './types';
 
 export interface Cache<Data> {
   get: (key: string) => Data | undefined | null;

@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { createOptions, mergeOptions, RequestOptions } from './options';
-import { RequestConfigType, useRequestConfig } from './request-config';
+import { createOptions, mergeOptions } from './options';
+import { useRequestConfig } from './request-config';
 import { broadcast, subscribe } from './subscribe';
-
-import { DefaultData, DefaultError, State, Requester, RequestFetcher, RequestKey } from './types';
 import useMemoState from './use-memo-state';
+
+import type { RequestOptions } from './options';
+import type { RequestConfigType } from './request-config';
+import type { DefaultData, DefaultError, State, Requester, RequestFetcher, RequestKey } from './types';
 
 const getCachedValue = <Data, Err, FetchData extends unknown[]>(
   id: string | undefined,
