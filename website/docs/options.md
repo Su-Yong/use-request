@@ -6,7 +6,7 @@ title: Options
 # Options
 The options available for `useRequest`.
 * `initWith?: Data | null`
-* `cache?: boolean`
+* `cache?: Cache<State<Data, Err>> | boolean`
 * `dedupingFetching?: boolean`
 * `initWhenUndefined?: boolean`
 * ~~`UNSTABLE__suspense?: boolean`~~ (SOON)

@@ -6,7 +6,7 @@ title: 옵션
 # 옵션
 `useRequest`의 옵션으로 사용할 수 있는것들은 다음과 같습니다.
 * `initWith?: Data | null`
-* `cache?: boolean`
+* `cache?: Cache<State<Data, Err>> | boolean`
 * `dedupingFetching?: boolean`
 * `initWhenUndefined?: boolean`
 * ~~`UNSTABLE__suspense?: boolean`~~ (지원 예정입니다)

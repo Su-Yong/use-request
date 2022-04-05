@@ -9,7 +9,7 @@ This library is available for React Project
 ## Quick Start
 Before using `useRequest`, create a component used `useRequest`.
 ```tsx
-const Component = () => {
+function Component() {
   return (
     <div>
       <div>Data</div>
@@ -21,7 +21,7 @@ const Component = () => {
 
 then use `useRequest` if you use RESTful API
 ```tsx
-const Component = () => {
+function Component() {
   const { data } = useRequest();
   
   return (
@@ -36,7 +36,7 @@ const Component = () => {
 write URL where send request
 ```tsx
 const Component = () => {
-  const { data } = useRequest('https://api.example.com/upload');
+  const { data } = useRequest('https://jsonplaceholder.typicode.com/posts');
 
   return (
     <div>
@@ -48,64 +48,86 @@ const Component = () => {
 ```
 
 And make button send specific request
-```tsx
-const Component = () => {
-  const { data, fetcher } = useRequest('https://api.example.com/upload');
+```tsx live
+function Component() {
+  const { data, fetcher } = useRequest('https://jsonplaceholder.typicode.com/posts');
 
   const onClick = () => {
     fetcher({
-      myData: 'value',
+      title: 'foo',
+      content: 'bar',
+      userId: 1,
     });
   };
 
   return (
     <div>
-      <div>{data}</div>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
       <button onClick={onClick}>Upload</button>
     </div>
   );
-};
+}
 ```
 
 That's all. `useRequest` is so easy to use. Not only this.
 
-```tsx
-const url = 'https://api.example.com/upload';
-
-const Child = () => {
-  const { error, fetcher } = useRequest(url);
+```tsx live
+function Component() {
+  const renderCount = useRef(0);
+  const { data, fetcher } = useRequest('https://jsonplaceholder.typicode.com/posts');
 
   const onClick = () => {
     fetcher({
-      input: Math.random(),
+      title: 'foo',
+      content: 'bar',
+      userId: 1,
     });
   };
 
+  renderCount.current += 1;
+
   return (
     <div>
-      {error && 'Error'}
-      {!error && <button onClick={onClick}>Submit</button>}
+      <div>Last data is<pre>{JSON.stringify(data, null, 2)}</pre></div>
+      <div>Component is rendered {renderCount.current} time(s)</div>
+      <button onClick={onClick}>Upload</button>
     </div>
   );
-};
+}
+```
+In this example, even though the button is not pressed, there is already data. The reason is that we hit the upload button above this example.
 
-let count = -1;
-const Parent = () => {
-  const { data } = useRequest(url);
+`use-request` will **sync** the values if they are the same URL. Therefore, in this example, the data exists even if the button is not pressed. If you did not press the button in the example above, press any button in the two examples and check the result. The `data` in the two examples works with each other.
 
-  count += 1;
+:::info
+Of course you can also send the **request** individually even if the **URL** is the same. In this case, you can use [cache](options#cache) option and [RequestConfig](request-config).
+:::
+
+```tsx live
+function Component() {
+  const renderCount = useRef(0);
+  // delete `isValidating`. Component count will reduce 3 to 2.
+  const { data, isValidating, fetcher } = useRequest('https://jsonplaceholder.typicode.com/posts');
+
+  const onClick = () => {
+    fetcher({
+      title: 'foo',
+      content: 'bar',
+      userId: 1,
+    });
+  };
+
+  renderCount.current += 1;
 
   return (
     <div>
-      <div>Last data is "{data}"</div>
-      <div>data is provided {count} times</div>
-      <Child />
+      <div>{isValidating ? 'fetching data...' : 'idle'}</div>
+      <div>Last data is<pre>{JSON.stringify(data, null, 2)}</pre></div>
+      <div>Component is rendered {renderCount.current} time(s)</div>
+      <button onClick={onClick}>Upload</button>
     </div>
-  )
-};
+  );
+}
 ```
-As in the example, if they are different components but use the same URL, their values will be synchronized. Also, the total number of renderings of the `Parent` component is the number of times `data` has been changed. This is where the nature of `use-request` comes into play. `useRequest` only triggers a re-render when the used property is updated.
-
-:::info
-Of course you can also send the **request** individually even if the **URL** is the same. `use-request` is well aware of that, so it supports the [cache](options#cache) option and [RequestConfig](request-config).
-:::
+This example just added `isValidating` to the example above. However, the number of renderings increased. `use-request` trace where properties are used and only re-renders the component when the used properties are updated.
+If you don't use isValidating in this example, the component will be rendered twice.
