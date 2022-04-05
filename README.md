@@ -3,17 +3,15 @@ Zero dependency data fetch library for React
 
 # Features
 * Zero dependency
-* Small bundle size (~25KB)
-* Prevent useless rerender
 * Support TypeScript
-* Support ReactNative
+* Prevent useless rerender
 
 # Installation
-`npm install @suyongs/use-request`
+`npm install use-request`
 
 or
 
-`yarn add @suyongs/use-request`
+`yarn add use-request`
 
 # Usage
 ```tsx
@@ -23,20 +21,16 @@ interface Post {
   author: string;
 }
 
-const fetcher = async (url, body: Post): Promise<Post> => {
-  const reponse = await fetch(url, {
-    method: 'POST',
-    body: JSON.stringify(body),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-
-  return response.json();
-};
+const fetcher = (url, body) => fetch(url, {
+  method: 'POST',
+  body: JSON.stringify(body),
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 const Component = () => {
-  const { data, fetcher } = useRequest('https://example.com/upload', { fetcher });
+  const { data, fetcher } = useRequest<Post, Error, [Post]>('https://example.com/upload', { fetcher });
 
   const onClick = () => {
     fetcher({
@@ -48,15 +42,15 @@ const Component = () => {
 
   return (
     <div>
-      {data && <div>Upload Success</div>}
+      {data && <div>upload success</div>}
       <button onClick={onClick}>Upload</button>
     </div>
   );
 };
 ```
 
-# [Document](https://su-yong.github.io/use-request)
-Go to [Document](https://su-yong.github.io/use-request)
+# [Document](docs/index.md)
+Go to [Document](docs/index.md)
 
 # [Contributors](https://github.com/Su-Yong/use-request/contributors)
 |[Su-Yong](https://github.com/Su-Yong)|
