@@ -1,6 +1,9 @@
+import { State } from './types';
+import type { Cache } from './request-config';
+
 export interface RequestOptions<Data, FetchData extends unknown[]> {
   initWith?: FetchData | undefined | null;
-  cache?: boolean;
+  cache?: Cache<State<Data, any>> | boolean;
   dedupingFetching?: boolean;
   initWhenUndefined?: boolean;
   UNSTABLE__suspense?: boolean; // UNSTABLE
@@ -16,18 +19,25 @@ export type RequiredRequestOptions<Data, FetchData extends unknown[]> = (
 export const defaultFetcher = async (
   url: string,
   body: any,
-  method = 'POST',
-  headers = {},
-) => fetch(url, {
-  method,
-  body: JSON.stringify(body),
-  headers: {
-    'Content-Type': 'application/json',
-    ...headers,
-  },
-});
+  method: RequestInit['method'] | null = 'POST',
+  headers: RequestInit['headers'] = {},
+  type: 'JSON' | 'TEXT' | 'RAW' = 'JSON',
+) => {
+  const response = await fetch(url, {
+    method: method ? method : body ? 'POST' : 'GET',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+  });
 
-export const defaultOptions: RequiredRequestOptions<any, any> = {
+  if (type === 'JSON') return response.json();
+  if (type === 'TEXT') return response.text();
+  return response;
+}
+
+export const defaultOptions: RequestOptions<any, any> = {
   initWith: undefined,
   cache: true,
   dedupingFetching: true,

@@ -69,7 +69,13 @@ const useRequest = <
 
     setState('isValidating', true);
     if (options.cache) {
-      configRef.current.cache.set(id, {
+      const nowCache = (
+        typeof options.cache === 'boolean'
+          ? configRef.current.cache
+          : options.cache
+      );
+ 
+      nowCache.set(id, {
         data: ref.current.data,
         error: ref.current.error,
         isValidating: true,
@@ -90,7 +96,13 @@ const useRequest = <
 
     if (!mountRef.current) return;
     if (options.cache) {
-      configRef.current.cache.set(id, newState);
+      const nowCache = (
+        typeof options.cache === 'boolean'
+          ? configRef.current.cache
+          : options.cache
+      );
+ 
+      nowCache.set(id, newState);
       broadcast(id, newState);
     } else {
       changeState(newState);
