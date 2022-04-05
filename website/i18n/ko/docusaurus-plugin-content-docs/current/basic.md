@@ -9,7 +9,7 @@ title: 시작
 ## 빠른 시작
 `useRequest`를 사용하기 전에, `useRequest`를 사용할 컴포넌트를 만들어줍니다.
 ```tsx
-const Component = () => {
+function Component() {
   return (
     <div>
       <div>Data</div>
@@ -72,13 +72,9 @@ function Component() {
 이게 다입니다. `useRequest`는 이렇게나 사용하기 간편합니다. 이뿐만이 아닙니다.
 
 ```tsx live
-(() => {
-const url = 'https://jsonplaceholder.typicode.com/posts';
-let count = 0;
-let childCount = 0;
-
-const Child = () => {
-  const { error, fetcher } = useRequest(url);
+function Component() {
+  const renderCount = useRef(0);
+  const { data, fetcher } = useRequest('https://jsonplaceholder.typicode.com/posts');
 
   const onClick = () => {
     fetcher({
@@ -88,36 +84,50 @@ const Child = () => {
     });
   };
 
-  childCount += 1;
-
-  return (
-    <div>
-      {error && '오류가 나버렸네요...'}
-      Child는 {childCount}번 리렌더링 되었습니다.
-      {!error && <button onClick={onClick}>실행</button>}
-    </div>
-  );
-};
-
-const Parent = () => {
-  const { data } = useRequest(url);
-
-  count += 1;
+  renderCount.current += 1;
 
   return (
     <div>
       <div>마지막으로 가져온 데이터는 <pre>{JSON.stringify(data, null, 2)}</pre>입니다</div>
-      <div>Parent는 {count}번 데이터를 가져왔습니다.</div>
-      <Child />
+      <div>Component는 {renderCount.current}번 렌더링 되었습니다.</div>
+      <button onClick={onClick}>업로드</button>
     </div>
   );
-};
-
-return Parent;
-})()
+}
 ```
-예제 처럼 다른 컴포넌트이지만 같은 URL을 사용하고 있다면 그 값이 **동기화**됩니다. 또한 `Parent` 컴포넌트의 총 렌더링 횟수는 `data`가 변경된 횟수입니다. 여기서  `use-request`의 특징이 드러납니다. `useRequest`는 오직 사용한 프로퍼티가 업데이트 되어야 리렌더링을 발생시킵니다. `Child`컴포넌트의 렌더링 횟수와 `Parent`컴포넌트의 렌더링 횟수를 비교하면 차이를 확인할 수 있습니다.
+이 예시는 데이터를 가져오지 않았는데도, 이미 데이터가 있습니다. 그 이유는 바로 이 예시 위에 있던 업로드 버튼을 눌렀기 때문입니다.
+
+`use-request`는 동일한 URL일 경우에 값을 **동기화**합니다.  그렇기 때문에 이 예시는 버튼을 누르지 않아도 데이터가 존재합니다. 혹시 위 예제에서 버튼을 누르지 않았다면 두 예시중 아무버튼이나 누르고 결과를 확인해보세요. 두 예시에 있는 `data`가 서로 연동됩니다.
 
 :::info
-물론 **URL**이 같지만 개별적으로 **request**를 보낼 수도 있습니다. `use-request`도 그 점을 잘 알기 때문에 [cache](options#cache) 옵션과 [RequestConfig](request-config)를 지원하고 있습니다.
+물론 동일한 **URL**이지만 서로 다른 **request**를 보낼 수도 있습니다. 이럴때는 [cache](options#cache) 옵션과 [RequestConfig](request-config)를 사용하면 됩니다.
 :::
+
+```tsx live
+function Component() {
+  const renderCount = useRef(0);
+  // isValidating을 지워보세요 컴포넌트 카운트 횟수가 3회에서 2회로 줄어듭니다.
+  const { data, isValidating, fetcher } = useRequest('https://jsonplaceholder.typicode.com/posts');
+
+  const onClick = () => {
+    fetcher({
+      title: 'foo',
+      content: 'bar',
+      userId: 1,
+    });
+  };
+
+  renderCount.current += 1;
+
+  return (
+    <div>
+      <div>{isValidating ? '데이터 가져오는 중...' : 'idle'}</div>
+      <div>마지막으로 가져온 데이터는 <pre>{JSON.stringify(data, null, 2)}</pre>입니다</div>
+      <div>Component는 {renderCount.current}번 렌더링 되었습니다.</div>
+      <button onClick={onClick}>업로드</button>
+    </div>
+  );
+}
+```
+이 예시는 위의 예시에 `isValidating`만 추가했습니다. 그러나 렌더링 횟수가 증가하였습니다. `use-request`는 사용한 프로퍼티를 추적하여 사용한 프로퍼티가 업데이트 되었을때만 컴포넌트를 리렌더링합니다.
+만약 이 예시에서 isValidating을 사용하지 않는다면 컴포넌트 렌더링 횟수는 2회가 될것입니다.
