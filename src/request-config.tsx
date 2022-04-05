@@ -1,6 +1,6 @@
 import React, { useContext, useMemo } from 'react';
 import { State } from './types';
-import { createOptions, RequestOptions, RequiredRequestOptions } from './options';
+import { createOptions, RequestOptions, RequiredRequestOptions, defaultOptions } from './options';
 
 export interface Cache<Data> {
   get: (key: string) => Data | undefined | null;
@@ -17,7 +17,7 @@ export interface RequestConfigType<Data, FetchData extends unknown[]> {
 
 export const RequestConfigContext = React.createContext<RequestConfigType<any, any>>({
   cache: new Map(),
-  options: {},
+  options: defaultOptions,
 });
 
 export const useRequestConfig = <
