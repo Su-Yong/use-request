@@ -554,4 +554,54 @@ describe('useRequest', () => {
       expect(screen.getByTestId('error')).toHaveTextContent('TestError');  
     });
   });
+
+  it('render time', async () => {
+    let count1 = 0;
+    let count2 =0;
+
+    const Component1 = () => {
+      const { data, isValidating } = useRequest('/render', options);
+      
+      count1 += 1;
+
+      return (
+        <div>
+          {data?.toString()}
+          {isValidating.toString()}
+        </div>
+      );
+    };
+    const Component2 = () => {
+      const { data, fetcher } = useRequest('/render', options);
+
+      const onClick = () => {
+        fetcher('data');
+      };
+
+      count2 += 1;
+
+      return (
+        <div>
+          {data?.toString()}
+          <button data-testid={'submit'} onClick={onClick} />
+        </div>
+      );
+    };
+
+    render(
+      <RequestConfig cache={cache}>
+        <Component1 />
+        <Component2 />
+      </RequestConfig>
+    );
+
+    expect(count1).toBe(1);
+    expect(count2).toBe(1);
+
+    fireEvent.click(screen.getByTestId('submit'));
+    await waitFor(() => {
+      expect(count1).toBe(3);
+      expect(count2).toBe(2);
+    });
+  });
 });

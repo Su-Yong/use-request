@@ -54,9 +54,10 @@ const useRequest = <
 
   const changeState = useCallback((newState: State<Data, Err>) => {
     const changed: string[] = [];
-    if (Object.hasOwnProperty.call(newState, 'data') && (changed.push('data') !== null)) ref.current.data = newState.data;
-    if (Object.hasOwnProperty.call(newState, 'error') && (changed.push('error') !== null)) ref.current.error = newState.error;
-    if (Object.hasOwnProperty.call(newState, 'isValidating') && (changed.push('isValidating') !== null)) ref.current.isValidating = newState.isValidating;
+    // state가 바뀌지 않은 경우에는 object reference가 항상 같음
+    if (Object.hasOwnProperty.call(newState, 'data') && ref.current.data !== newState.data && (changed.push('data') !== null)) ref.current.data = newState.data;
+    if (Object.hasOwnProperty.call(newState, 'error') && ref.current.error !== newState.error && (changed.push('error') !== null)) ref.current.error = newState.error;
+    if (Object.hasOwnProperty.call(newState, 'isValidating') && ref.current.isValidating !== newState.isValidating && (changed.push('isValidating') !== null)) ref.current.isValidating = newState.isValidating;
 
     if (changed.some((it) => observed.current.has(it))) rerender();
   }, [ref, observed]);
@@ -75,11 +76,13 @@ const useRequest = <
           : options.cache
       );
  
-      nowCache.set(id, {
+      const newState = {
         data: ref.current.data,
         error: ref.current.error,
         isValidating: true,
-      });
+      };
+      nowCache.set(id, newState);
+      broadcast(id, newState);
     }
 
     const newState: State<Data, Err> = await options.fetcher(url, ...args)
