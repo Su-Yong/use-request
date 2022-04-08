@@ -107,15 +107,15 @@ describe('useRequest', () => {
     expect(screen.getByTestId('validate')).toHaveTextContent(/^true$/);
   });
 
-  it('option(initWith: null)', async () => {
+  it('option(initWith: false)', async () => {
     const TestComponent = () => {
       const { data, isValidating, fetcher } = useRequest('/initWith', {
         ...options,
-        initWith: null,
+        initWith: false,
       });
 
       const click = () => {
-        fetcher('null');
+        fetcher('false');
       }
 
       return (
@@ -144,7 +144,7 @@ describe('useRequest', () => {
     expect(screen.getByTestId('validate')).toHaveTextContent(/^true$/);
 
     await waitFor(() => {
-      expect(screen.getByTestId('data')).toHaveTextContent(/^\/initWith:null$/);
+      expect(screen.getByTestId('data')).toHaveTextContent(/^\/initWith:false$/);
       expect(screen.getByTestId('validate')).toHaveTextContent(/^false$/);
     });
 
@@ -159,7 +159,7 @@ describe('useRequest', () => {
     expect(screen.getByTestId('validate')).toHaveTextContent(/^false$/);
   });
 
-  it('option(initWith: default(undefined))', async () => {
+  it('option(initWith: default(true))', async () => {
     const TestComponent = () => {
       const { data, isValidating, fetcher } = useRequest('/initWith', options);
 

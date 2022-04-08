@@ -19,7 +19,7 @@ const getCachedValue = <Data, Err, FetchData extends unknown[]>(
     isValidating: false,
   };
 
-  if (id && options.cache && options.initWith !== null) {
+  if (id && options.cache && options.initWith !== false) {
     return config?.get(id) ?? fallback;
   }
 
@@ -51,7 +51,7 @@ const useRequest = <
   const [result, setState, { ref, observed, rerender }] = useMemoState<State<Data, Err>>({
     data: initData,
     error: initError,
-    isValidating: initIsValidating || !!options.initWith,
+    isValidating: initIsValidating || Array.isArray(options.initWith),
   });
 
   const changeState = useCallback((newState: State<Data, Err>) => {
@@ -123,7 +123,7 @@ const useRequest = <
   }, [id, options.cache, ref, observed, changeState]);
 
   useEffect(() => {
-    if (options.initWith) {
+    if (Array.isArray(options.initWith)) {
       if (options.initWhenUndefined) {
         if (!ref.current.data) {
           ref.current.isValidating = false;
