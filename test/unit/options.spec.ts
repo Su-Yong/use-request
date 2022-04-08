@@ -17,7 +17,7 @@ describe('Utils: mergeOptions', () => {
       cache: false,
     });
 
-    expect(target.initWith![0]).toEqual({
+    expect((target.initWith as any)[0]).toEqual({
       type: 'test',
       name: 'basic usage',
     });
@@ -26,7 +26,7 @@ describe('Utils: mergeOptions', () => {
     expect(target.dedupingFetching).toBeUndefined();
     expect(target.UNSTABLE__suspense).toBeUndefined();
 
-    expect(result.initWith![0]).toEqual({
+    expect((result.initWith as any)[0]).toEqual({
       type: 'test',
       name: 'basic usage',
     });
@@ -41,7 +41,7 @@ describe('Utils: mergeOptions', () => {
 
     const result = mergeOptions(target, {});
 
-    expect(target.initWith![0]).toEqual({
+    expect((target.initWith as any)[0]).toEqual({
       type: 'test',
       name: 'empty fallback',
     });
@@ -50,7 +50,7 @@ describe('Utils: mergeOptions', () => {
     expect(target.dedupingFetching).toBeUndefined();
     expect(target.UNSTABLE__suspense).toBeUndefined();
 
-    expect(result.initWith![0]).toEqual({
+    expect((result.initWith as any)[0]).toEqual({
       type: 'test',
       name: 'empty fallback',
     });
@@ -72,7 +72,7 @@ describe('Utils: mergeOptions', () => {
       ],
     });
 
-    expect(target.initWith![0]).toEqual({
+    expect((target.initWith as any)[0]).toEqual({
       type: 'test',
       name: 'override priority',
     });
@@ -81,7 +81,7 @@ describe('Utils: mergeOptions', () => {
     expect(target.dedupingFetching).toBeUndefined();
     expect(target.UNSTABLE__suspense).toBeUndefined();
 
-    expect(result.initWith![0]).toEqual({
+    expect((result.initWith as any)[0]).toEqual({
       type: 'test',
       name: 'override priority',
     });
@@ -108,7 +108,7 @@ describe('Utils: mergeOptions', () => {
     });
 
     expect(target.initWith).toHaveLength(1);
-    expect(target.initWith![0]).toEqual({
+    expect((target.initWith as any)[0]).toEqual({
       type: 'test',
       name: 'array merge strategy',
     });
@@ -118,11 +118,11 @@ describe('Utils: mergeOptions', () => {
     expect(target.UNSTABLE__suspense).toBeUndefined();
 
     expect(result.initWith).toHaveLength(2);
-    expect(result.initWith![0]).toEqual({
+    expect((result.initWith as any)[0]).toEqual({
       type: 'test',
       name: 'array merge strategy',
     });
-    expect(result.initWith![1]).toEqual({
+    expect((result.initWith as any)[1]).toEqual({
       type: 'first object',
       name: 'is same as target',
     });
@@ -136,14 +136,14 @@ describe('Utils: mergeOptions', () => {
 describe('Options: createOptions', () => {
   it('basic usage', () => {
     const option = createOptions({
-      initWith: null,
+      initWith: false,
       cache: false,
       dedupingFetching: false,
     }) as any;
 
     const expectTo = {
       ...defaultOptions,
-      initWith: null,
+      initWith: false,
       cache: false,
       dedupingFetching: false,
     };
