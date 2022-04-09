@@ -9,7 +9,7 @@
   },
   "link.item.label.Intro": {
     "message": "시작",
-    "description": "The label of footer link with label=Intro linking to /docs/intro"
+    "description": "The label of footer link with label=Intro linking to /docs"
   },
   "link.item.label.Blog": {
     "message": "블로그",
