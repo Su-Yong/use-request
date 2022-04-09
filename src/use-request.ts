@@ -7,7 +7,7 @@ import useMemoState from './use-memo-state';
 import type { RequestOptions } from './options';
 import type { RequestConfigType } from './request-config';
 import type { DefaultData, DefaultError, State, Requester, RequestFetcher, RequestKey } from './types';
-import { Middleware } from '.';
+import type { Middleware } from './middleware';
 
 const getCachedValue = <Data, Err, FetchData extends unknown[]>(
   id: string | undefined,
@@ -71,7 +71,11 @@ const useRequest = <
       .reverse()
       .map((middleware) => middleware({
         key: keyRef.current,
-        state: { ...ref.current },
+        state: {
+          data: ref.current.data,
+          error: ref.current.error,
+          isValidating: ref.current.isValidating,
+        },
         fetchData: args,
       }))
       .filter((it) => it) as Middleware<Data, FetchData>[];
@@ -111,15 +115,6 @@ const useRequest = <
       }));
 
     if (!mountRef.current) return;
-    resolvedMiddleware
-      .reverse()
-      .forEach((middleware) => {
-        middleware({
-          key: keyRef.current,
-          state: newState,
-          fetchData: args,
-        });
-      });
     if (options.cache) {
       const nowCache = (
         typeof options.cache === 'boolean'
@@ -132,6 +127,16 @@ const useRequest = <
     } else {
       changeState(newState);
     }
+
+    resolvedMiddleware
+      .reverse()
+      .forEach((middleware) => {
+        middleware({
+          key: keyRef.current,
+          state: newState,
+          fetchData: args,
+        });
+      });
   }, [url, options, ref, mountRef, configRef, keyRef, changeState]);
   
   useEffect(() => {
@@ -168,7 +173,7 @@ const useRequest = <
     // ignore deps
   }, []);
 
-  return { ...result, fetcher };
+  return Object.assign(result, { fetcher });
 };
 
 export default useRequest;

@@ -557,7 +557,7 @@ describe('useRequest', () => {
 
   it('render time', async () => {
     let count1 = 0;
-    let count2 =0;
+    let count2 = 0;
 
     const Component1 = () => {
       const { data, isValidating } = useRequest('/render', options);
@@ -716,7 +716,6 @@ describe('useRequest', () => {
     fireEvent.click(screen.getByTestId('submit'));
     
     await waitFor(() => {
-      console.log(log);
       expect(log).toHaveLength(4);
       expect(log[0]).toEqual('before:2');
       expect(log[1]).toEqual('before:1');
