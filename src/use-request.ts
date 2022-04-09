@@ -7,6 +7,7 @@ import useMemoState from './use-memo-state';
 import type { RequestOptions } from './options';
 import type { RequestConfigType } from './request-config';
 import type { DefaultData, DefaultError, State, Requester, RequestFetcher, RequestKey } from './types';
+import { Middleware } from '.';
 
 const getCachedValue = <Data, Err, FetchData extends unknown[]>(
   id: string | undefined,
@@ -37,6 +38,7 @@ const useRequest = <
   const config = useRequestConfig<Data, FetchData>();
   const mountRef = useRef(false);
   const configRef = useRef(config);
+  const keyRef = useRef(key);
 
   const id = useMemo(() => typeof key === 'string' ? key : key.id ?? key.url, [key]);
   const url = useMemo(() => typeof key === 'string' ? key : key.url, [key]);
@@ -65,6 +67,14 @@ const useRequest = <
   }, [ref, observed]);
 
   const fetcher: RequestFetcher<RequestOptions<Data, FetchData>> = useCallback(async (...args) => {
+    const resolvedMiddleware = configRef.current.middlewares
+      .map((middleware) => middleware({
+        key: keyRef.current,
+        state: { ...ref.current },
+        fetchData: args,
+      }))
+      .filter((it) => it) as Middleware<Data, FetchData>[];
+
     if (options.dedupingFetching) {
       if (options.cache && configRef.current.cache.get(id)?.isValidating) return;
       if (!options.cache && ref.current.isValidating) return;
@@ -100,6 +110,13 @@ const useRequest = <
       }));
 
     if (!mountRef.current) return;
+    resolvedMiddleware.forEach((middleware) => {
+      middleware({
+        key: keyRef.current,
+        state: newState,
+        fetchData: args,
+      });
+    });
     if (options.cache) {
       const nowCache = (
         typeof options.cache === 'boolean'
@@ -112,7 +129,7 @@ const useRequest = <
     } else {
       changeState(newState);
     }
-  }, [url, options, ref, mountRef, configRef, changeState]);
+  }, [url, options, ref, mountRef, configRef, keyRef, changeState]);
   
   useEffect(() => {
     if (options.cache) {
@@ -148,7 +165,7 @@ const useRequest = <
     // ignore deps
   }, []);
 
-  return Object.assign(result, { fetcher });
+  return { ...result, fetcher };
 };
 
 export default useRequest;

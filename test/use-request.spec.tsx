@@ -656,7 +656,7 @@ describe('useRequest', () => {
           'data'
         ],
       });
-      expect(log[2]).toEqual({
+      expect(log[1]).toEqual({
         key: '/middleware',
         state: {
           data: '/middleware:data',
