@@ -1,6 +1,6 @@
 ---
-id: typescript
-title: TypeScript
+id: typescript-basic
+title: TypeScript 시작
 ---
 
 # TypeScript

@@ -4,3 +4,4 @@ export { default as useMemoState } from './use-memo-state';
 export * from './types';
 export * from './request-config';
 export * from './options';
+export * from './middleware';

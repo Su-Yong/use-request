@@ -12,8 +12,17 @@ const sidebars = {
     'fetcher',
     'options',
     'cache',
-    'request-config',
-    'typescript',
+    {
+      Type: [
+        'type/typescript-basic',
+      ],
+    },
+    {
+      Advanced: [
+        'request-config',
+        'middleware',
+      ],
+    },
   ],
 };
 

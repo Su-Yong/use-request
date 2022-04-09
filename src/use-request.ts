@@ -7,6 +7,7 @@ import useMemoState from './use-memo-state';
 import type { RequestOptions } from './options';
 import type { RequestConfigType } from './request-config';
 import type { DefaultData, DefaultError, State, Requester, RequestFetcher, RequestKey } from './types';
+import type { Middleware } from './middleware';
 
 const getCachedValue = <Data, Err, FetchData extends unknown[]>(
   id: string | undefined,
@@ -37,6 +38,7 @@ const useRequest = <
   const config = useRequestConfig<Data, FetchData>();
   const mountRef = useRef(false);
   const configRef = useRef(config);
+  const keyRef = useRef(key);
 
   const id = useMemo(() => typeof key === 'string' ? key : key.id ?? key.url, [key]);
   const url = useMemo(() => typeof key === 'string' ? key : key.url, [key]);
@@ -65,6 +67,19 @@ const useRequest = <
   }, [ref, observed]);
 
   const fetcher: RequestFetcher<RequestOptions<Data, FetchData>> = useCallback(async (...args) => {
+    const resolvedMiddleware = configRef.current.middlewares
+      .reverse()
+      .map((middleware) => middleware({
+        key: keyRef.current,
+        state: {
+          data: ref.current.data,
+          error: ref.current.error,
+          isValidating: ref.current.isValidating,
+        },
+        fetchData: args,
+      }))
+      .filter((it) => it) as Middleware<Data, FetchData>[];
+
     if (options.dedupingFetching) {
       if (options.cache && configRef.current.cache.get(id)?.isValidating) return;
       if (!options.cache && ref.current.isValidating) return;
@@ -112,7 +127,17 @@ const useRequest = <
     } else {
       changeState(newState);
     }
-  }, [url, options, ref, mountRef, configRef, changeState]);
+
+    resolvedMiddleware
+      .reverse()
+      .forEach((middleware) => {
+        middleware({
+          key: keyRef.current,
+          state: newState,
+          fetchData: args,
+        });
+      });
+  }, [url, options, ref, mountRef, configRef, keyRef, changeState]);
   
   useEffect(() => {
     if (options.cache) {
