@@ -5,7 +5,7 @@ title: Options
 
 # Options
 The options available for `useRequest`.
-* `initWith?: Data | null`
+* `initWith?: Data | boolean`
 * `cache?: Cache<State<Data, Err>> | boolean`
 * `dedupingFetching?: boolean`
 * `initWhenUndefined?: boolean`
@@ -34,15 +34,16 @@ const Component = () => {
   );
 };
 ```
-Contrary to the above, if you omit `initWith` or put `undefined`, you get a cached value.
+Contrary to the above, if `initWith` is `true`, `useRequest` try to get a value from cache.
 
-Also, if you put `null` in `initWith`, even if previously cached data exists, `useRequest` does not load cached data when the component is mounted.
+Also, `initWith` is `false`, `useRequest` does not load cached data when the component is mounted even if preivously cached data exists.
 
 :::caution
-`initWith` recognizes `null` and `undefined` differently. Omitting `initWith` has the same action as putting `undefined`, but `null` and `undefined` have different actions.
+before 0.4.0 (exclude 0.4.0), type of `initWith` is `initWith: Data | null | undefined`;
+Old version's `null`, `undefined` value correspond current version's `false`, `true` value.
 :::
 
-You might think that putting this `null' value is useless, but for a set of components, it works very well.
+You might think that putting this `false' value is useless, but for a set of components, it works very well.
 
 For example, you want to create a component that uploads and edits a post defined as the following type.
 
@@ -81,7 +82,7 @@ const PostPage = () => {
   });
   const { error } = useRequest(url, {
     ...options,
-    initWith: null,
+    initWith: false,
   });
 
   return (
@@ -101,7 +102,7 @@ const PostPage = () => {
 ```
 If you create a component as above, you should use the caching ability of `useRequest` so that the same result can be received even if the two components are separated. However, when the cached data is fetched, even if the main component is **unmounted** and **mounted** again, the initial value of `useRequest` is not empty, but the result of the previously attempted **request**.
 
-Therefore, the `initWith: null` option serves to create a **start point** for components that use a specific **request** by temporarily initializing them whenever a component is mounted, regardless of caching capabilities.
+Therefore, the `initWith: false` option serves to create a **start point** for components that use a specific **request** by temporarily initializing them whenever a component is mounted, regardless of caching capabilities.
 
 In a much more complex case, it may be better to provide a new [`Cache`](cache) object using `RequestConfig`. But since `RequestConfig` is too complex, we can use Shortcut like this.
 

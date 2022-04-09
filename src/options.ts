@@ -2,7 +2,7 @@ import type { State } from './types';
 import type { Cache } from './request-config';
 
 export interface RequestOptions<Data, FetchData extends unknown[]> {
-  initWith?: FetchData | undefined | null;
+  initWith?: FetchData | boolean;
   cache?: Cache<State<Data, any>> | boolean;
   dedupingFetching?: boolean;
   initWhenUndefined?: boolean;
@@ -11,10 +11,7 @@ export interface RequestOptions<Data, FetchData extends unknown[]> {
   fetcher?: (url: string, ...args: FetchData) => Promise<Data>;
 }
 
-export type RequiredRequestOptions<Data, FetchData extends unknown[]> = (
-  Required<Omit<RequestOptions<Data, FetchData>, 'initWith'>>
-  & { initWith: RequestOptions<Data, FetchData>['initWith'] }
-);
+export type RequiredRequestOptions<Data, FetchData extends unknown[]> = Required<RequestOptions<Data, FetchData>>;
 
 export const defaultFetcher = async (
   url: string,
@@ -38,7 +35,7 @@ export const defaultFetcher = async (
 }
 
 export const defaultOptions: RequestOptions<any, any> = {
-  initWith: undefined,
+  initWith: true,
   cache: true,
   dedupingFetching: true,
   initWhenUndefined: true,
@@ -70,13 +67,15 @@ export const mergeOptions = <Data, FetchData extends unknown[]>(
       if (Array.isArray(secondary.initWith)) availables.push(secondary.initWith);
       
       if (availables.length > 0) {
-        result.initWith ??= [] as unknown as FetchData;
+        const initWith = [] as unknown as FetchData;
 
-        availables.forEach((initWith) => {
-          if (result.initWith!.length < initWith.length) {
-            result.initWith!.push(...initWith.slice(result.initWith!.length));
+        availables.forEach((it) => {
+          if (initWith.length < it.length) {
+            initWith.push(...it.slice(initWith.length));
           }
         });
+
+        result.initWith = initWith;
       } else if (!Array.isArray(result.initWith)) {
         if (Object.hasOwnProperty.call(primary, 'initWith')) result.initWith = primary.initWith;
         else if (Object.hasOwnProperty.call(secondary, 'initWith')) result.initWith = secondary.initWith;
