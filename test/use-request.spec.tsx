@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-import { createOptions, State, RequestConfig, useRequest, Cache } from '../src';
+import { createOptions, State, RequestConfig, useRequest, Cache, createMiddleware } from '../src';
 
 import { time } from './utils';
 
@@ -602,6 +602,71 @@ describe('useRequest', () => {
     await waitFor(() => {
       expect(count1).toBe(3);
       expect(count2).toBe(2);
+    });
+  });
+
+  it('middleware', async () => {
+    const log: any[] = [];
+    const logger = createMiddleware((beforeState) => {
+      log.push(beforeState);
+
+      return (afterState) => {
+        log.push(afterState);
+      }
+    });
+
+    const Component = () => {
+      const { data, fetcher } = useRequest('/middleware', options);
+
+      const onClick = () => {
+        fetcher('data');
+      };
+
+      return (
+        <div>
+          {data?.toString()}
+          <button data-testid={'submit'} onClick={onClick} />
+        </div>
+      );
+    };
+    
+    render(
+      <RequestConfig
+        cache={cache}
+        middleware={logger}
+      >
+        <Component />
+      </RequestConfig>
+    );
+
+    expect(log).toHaveLength(0);
+
+    fireEvent.click(screen.getByTestId('submit'));
+    
+    await waitFor(() => {
+      expect(log).toHaveLength(2);
+      expect(log[0]).toEqual({
+        key: '/middleware',
+        state: {
+          data: undefined,
+          error: undefined,
+          isValidating: false,
+        },
+        fetchData: [
+          'data'
+        ],
+      });
+      expect(log[2]).toEqual({
+        key: '/middleware',
+        state: {
+          data: '/middleware:data',
+          error: undefined,
+          isValidating: false,
+        },
+        fetchData: [
+          'data'
+        ],
+      });
     });
   });
 });
