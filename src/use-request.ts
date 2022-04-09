@@ -68,6 +68,7 @@ const useRequest = <
 
   const fetcher: RequestFetcher<RequestOptions<Data, FetchData>> = useCallback(async (...args) => {
     const resolvedMiddleware = configRef.current.middlewares
+      .reverse()
       .map((middleware) => middleware({
         key: keyRef.current,
         state: { ...ref.current },
@@ -110,13 +111,15 @@ const useRequest = <
       }));
 
     if (!mountRef.current) return;
-    resolvedMiddleware.forEach((middleware) => {
-      middleware({
-        key: keyRef.current,
-        state: newState,
-        fetchData: args,
+    resolvedMiddleware
+      .reverse()
+      .forEach((middleware) => {
+        middleware({
+          key: keyRef.current,
+          state: newState,
+          fetchData: args,
+        });
       });
-    });
     if (options.cache) {
       const nowCache = (
         typeof options.cache === 'boolean'

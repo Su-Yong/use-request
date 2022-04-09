@@ -669,4 +669,59 @@ describe('useRequest', () => {
       });
     });
   });
+
+  it('multiple middleware', async () => {
+    const log: string[] = [];
+    const logger1 = createMiddleware(() => {
+      log.push('before:1');
+
+      return () => {
+        log.push('after:1');
+      }
+    });
+    const logger2 = createMiddleware(() => {
+      log.push('before:2');
+
+      return () => {
+        log.push('after:2');
+      }
+    });
+
+    const Component = () => {
+      const { data, fetcher } = useRequest('/middleware', options);
+
+      const onClick = () => {
+        fetcher('data');
+      };
+
+      return (
+        <div>
+          {data?.toString()}
+          <button data-testid={'submit'} onClick={onClick} />
+        </div>
+      );
+    };
+    
+    render(
+      <RequestConfig
+        cache={cache}
+        middleware={[logger1, logger2]}
+      >
+        <Component />
+      </RequestConfig>
+    );
+
+    expect(log).toHaveLength(0);
+
+    fireEvent.click(screen.getByTestId('submit'));
+    
+    await waitFor(() => {
+      console.log(log);
+      expect(log).toHaveLength(4);
+      expect(log[0]).toEqual('before:2');
+      expect(log[1]).toEqual('before:1');
+      expect(log[2]).toEqual('after:1');
+      expect(log[3]).toEqual('after:2');
+    });
+  });
 });
