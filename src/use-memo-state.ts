@@ -1,13 +1,11 @@
 import React, { SetStateAction, useCallback, useMemo, useRef, useState } from 'react';
 
-type Dispatch<T> = <Key extends keyof T>(key: Key, action: SetStateAction<T[Key]>) => void;
-type Mutate<T> = {
-  ref: React.MutableRefObject<T>;
-  observed: React.MutableRefObject<Set<string>>;
-  rerender: () => void;
-};
+interface Dispatch<T> {
+  <Key extends keyof T>(key: Key, action: SetStateAction<T[Key]>): void;
+  <Keys extends (keyof T)[], Actions extends SetStateAction<T[Keys[number]]>[]>(key: Keys, action: Actions): void;
+}
 
-const useMemoState = <Value extends object>(initValue: Value): [Value, Dispatch<Value>, Mutate<Value>] => {
+const useMemoState = <Value extends object>(initValue: Value): [Value, Dispatch<Value>, React.MutableRefObject<Value>] => {
   const value = useRef(initValue);
   const observed = useRef<Set<string>>(new Set());
 
@@ -21,33 +19,42 @@ const useMemoState = <Value extends object>(initValue: Value): [Value, Dispatch<
     },
   }), [value, observed]);
 
-  const dispatcher: Dispatch<Value> = useCallback((
-    key,
-    actions,
-  ) => {
-    const newState = (
-      actions instanceof Function
-        ? actions(value.current[key])
-        : actions
-    );
+  const dispatcher: Dispatch<Value> = useCallback(
+    (keys: any, actions: any) => {
+      if (Array.isArray(keys)) {
+        keys.forEach((key, index) => {
+          const newState = (
+            actions[index] instanceof Function
+              ? actions[index](value.current[key as keyof Value])
+              : actions[index]
+            );
 
-    value.current[key as keyof Value] = newState;
+          value.current[key as keyof Value] = newState;
+        });
 
-    if (observed.current.has(key.toString())) {
-      rerender({});
-    }
-  }, [value, observed]);
+
+        if (keys.some((key) => observed.current.has(key))) rerender({});
+      } else {
+        const newState = (
+          actions instanceof Function
+            ? actions(value.current[keys as keyof Value])
+            : actions
+        );
+    
+        value.current[keys as keyof Value] = newState;
+    
+        if (observed.current.has(keys)) rerender({});
+      }
+    },
+    [value, observed],
+  );
 
   const rerenderer = useCallback(() => rerender({}), [rerender]);
 
   return [
     proxy,
     dispatcher,
-    {
-      ref: value,
-      observed,
-      rerender: rerenderer,
-    },
+    value,
   ];
 };
 
