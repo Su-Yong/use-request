@@ -50,21 +50,20 @@ const useRequest = <
     isValidating: initIsValidating,
   } = getCachedValue<Data, Err, FetchData>(id, options, config.cache);
 
-  const [result, setState, { ref, observed, rerender }] = useMemoState<State<Data, Err>>({
+  const [result, setState, ref] = useMemoState<State<Data, Err>>({
     data: initData,
     error: initError,
     isValidating: initIsValidating || Array.isArray(options.initWith),
   });
 
   const changeState = useCallback((newState: State<Data, Err>) => {
-    const changed: string[] = [];
     // state가 바뀌지 않은 경우에는 object reference가 항상 같음
-    if (Object.hasOwnProperty.call(newState, 'data') && ref.current.data !== newState.data && (changed.push('data') !== null)) ref.current.data = newState.data;
-    if (Object.hasOwnProperty.call(newState, 'error') && ref.current.error !== newState.error && (changed.push('error') !== null)) ref.current.error = newState.error;
-    if (Object.hasOwnProperty.call(newState, 'isValidating') && ref.current.isValidating !== newState.isValidating && (changed.push('isValidating') !== null)) ref.current.isValidating = newState.isValidating;
+    const filteredState = Object.entries(newState).filter(([key, data]) => ref.current[key as keyof State<Data, Err>] !== data);
+    const keys = filteredState.map(([key]) => key) as (keyof State<Data, Err>)[];
+    const values = filteredState.map(([, value]) => value);
 
-    if (changed.some((it) => observed.current.has(it))) rerender();
-  }, [ref, observed]);
+    setState(keys, values);
+  }, [ref]);
 
   const fetcher: RequestFetcher<RequestOptions<Data, FetchData>> = useCallback(async (...args) => {
     const resolvedMiddleware = configRef.current.middlewares
@@ -145,7 +144,7 @@ const useRequest = <
 
       return unsubscribe;
     }
-  }, [id, options.cache, ref, observed, changeState]);
+  }, [id, options.cache, ref, changeState]);
 
   useEffect(() => {
     if (Array.isArray(options.initWith)) {
