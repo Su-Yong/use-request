@@ -8,11 +8,12 @@ import type { RequestOptions } from './options';
 import type { RequestConfigType } from './request-config';
 import type { DefaultData, DefaultError, State, Requester, RequestFetcher, RequestKey } from './types';
 import type { Middleware } from './middleware';
+import { DefaultFetchData } from '.';
 
 const getCachedValue = <Data, Err, FetchData extends unknown[]>(
   id: string | undefined,
-  options: RequestOptions<Data, FetchData>,
-  config: RequestConfigType<Data, FetchData>['cache'],
+  options: RequestOptions<Data, Err, FetchData>,
+  config: RequestConfigType<Data, Err, FetchData>['cache'],
 ): State<Data, Err> => {
   const fallback: State<Data, Err> = {
     data: undefined,
@@ -30,12 +31,12 @@ const getCachedValue = <Data, Err, FetchData extends unknown[]>(
 const useRequest = <
   Data = DefaultData,
   Err = DefaultError,
-  FetchData extends unknown[] = any[],
+  FetchData extends unknown[] = DefaultFetchData,
 >(
   key: RequestKey,
-  initOptions: RequestOptions<Data, FetchData> = {},
-): Requester<Data, Err, RequestOptions<Data, FetchData>> => {
-  const config = useRequestConfig<Data, FetchData>();
+  initOptions: Partial<RequestOptions<Data, Err, FetchData>> = {},
+): Requester<Data, Err, RequestOptions<Data, Err, FetchData>> => {
+  const config = useRequestConfig<Data, Err, FetchData>();
   const mountRef = useRef(false);
   const configRef = useRef(config);
   const keyRef = useRef(key);
@@ -65,7 +66,7 @@ const useRequest = <
     setState(keys, values);
   }, [ref]);
 
-  const fetcher: RequestFetcher<RequestOptions<Data, FetchData>> = useCallback(async (...args) => {
+  const fetcher: RequestFetcher<RequestOptions<Data, Err, FetchData>> = useCallback(async (...args) => {
     const resolvedMiddleware = configRef.current.middlewares
       .reverse()
       .map((middleware) => middleware({
@@ -77,7 +78,7 @@ const useRequest = <
         },
         fetchData: args,
       }))
-      .filter((it) => it) as Middleware<Data, FetchData>[];
+      .filter((it) => it) as Middleware<Data, Err, FetchData>[];
 
     if (options.dedupingFetching) {
       if (options.cache && configRef.current.cache.get(id)?.isValidating) return;

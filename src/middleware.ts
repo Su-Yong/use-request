@@ -1,15 +1,15 @@
 import type { RequestKey, State } from './types';
-export type MiddlewareData<Data, FetchData extends unknown[]> = {
+export type MiddlewareData<Data, Err,FetchData extends unknown[]> = {
   key: RequestKey;
-  state: State<Data, any>;
+  state: State<Data, Err>;
   fetchData: FetchData;
 };
 
-export type Middleware<Data, FetchData extends unknown[]> = (
-  data: MiddlewareData<Data, FetchData>,
-) => Middleware<Data, FetchData> | void;
+export type Middleware<Data, Err, FetchData extends unknown[]> = (
+  data: MiddlewareData<Data, Err, FetchData>,
+) => Middleware<Data, Err, FetchData> | void;
 
 
-export const createMiddleware = <Data, FetchData extends unknown[]>(
-  func: Middleware<Data, FetchData>,
+export const createMiddleware = <Data, Err, FetchData extends unknown[]>(
+  func: Middleware<Data, Err, FetchData>,
 ) => func;

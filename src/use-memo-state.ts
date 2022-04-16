@@ -49,8 +49,6 @@ const useMemoState = <Value extends object>(initValue: Value): [Value, Dispatch<
     [value, observed],
   );
 
-  const rerenderer = useCallback(() => rerender({}), [rerender]);
-
   return [
     proxy,
     dispatcher,
