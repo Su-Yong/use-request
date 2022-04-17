@@ -5,16 +5,17 @@ export type DefaultError = Error;
 export type DefaultFetchData = any[];
 
 export type RequestFetcher<Option extends RequestOptions<any, any, any>> = (
-  Required<Option>['fetcher'] extends (url: string, ...args: infer K) => unknown
+  Option['fetcher'] extends (url: string, ...args: infer K) => unknown
     ? (...args: K) => void | Promise<void>
     : () => void | Promise<void>
 );
 
-export type State<Data, Err> = {
+export interface State<Data, Err> {
   data: Data | undefined;
   error: Err | undefined;
   isValidating: boolean;
-};
+}
+
 export interface Requester<
   Data = DefaultData,
   Err = DefaultError,
