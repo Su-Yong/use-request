@@ -7,6 +7,7 @@ export interface RequestOptions<Data = DefaultData, Err = DefaultError, FetchDat
   cache: Cache<State<Data, Err>> | boolean;
   dedupingFetching: boolean;
   initWhenUndefined: boolean;
+  ignoreSameValue: boolean;
 
   fetcher: (url: string, ...args: FetchData) => Promise<Data>;
 }
@@ -37,6 +38,7 @@ export const defaultOptions: RequestOptions<any, any, any> = {
   cache: true,
   dedupingFetching: true,
   initWhenUndefined: true,
+  ignoreSameValue: false,
 
   fetcher: defaultFetcher,
 };
