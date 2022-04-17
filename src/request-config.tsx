@@ -3,7 +3,7 @@ import { createOptions, defaultOptions } from './options';
 
 import type { RequestOptions } from './options';
 import type { State } from './types';
-import { Middleware } from '.';
+import type { Middleware } from './middleware';
 
 export interface Cache<Data> {
   get: (key: string) => Data | undefined | null;

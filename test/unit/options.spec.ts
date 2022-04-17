@@ -127,11 +127,11 @@ describe('Utils: mergeOptions', () => {
 
 describe('Options: createOptions', () => {
   it('basic usage', () => {
-    const option = createOptions({
+    const option: Partial<RequestOptions> = createOptions({
       initWith: false,
       cache: false,
       dedupingFetching: false,
-    }) as Partial<RequestOptions>;
+    });
 
     const expectTo: Partial<RequestOptions> = {
       ...defaultOptions,
