@@ -9,6 +9,7 @@ import type { RequestConfigType } from './request-config';
 import type { DefaultData, DefaultError, State, Requester, RequestFetcher, RequestKey } from './types';
 import type { Middleware } from './middleware';
 import { DefaultFetchData } from '.';
+import { isEqual } from './utils';
 
 const getCachedValue = <Data, Err, FetchData extends unknown[]>(
   id: string | undefined,
@@ -59,12 +60,15 @@ const useRequest = <
 
   const changeState = useCallback((newState: State<Data, Err>) => {
     // state가 바뀌지 않은 경우에는 object reference가 항상 같음
-    const filteredState = Object.entries(newState).filter(([key, data]) => ref.current[key as keyof State<Data, Err>] !== data);
+    let equals = (a: any, b: any) => a === b; // reference equal
+    if (options.ignoreSameValue) equals = isEqual; // deep value equal
+
+    const filteredState = Object.entries(newState).filter(([key, data]) => !equals(ref.current[key as keyof State<Data, Err>], data));
     const keys = filteredState.map(([key]) => key) as (keyof State<Data, Err>)[];
     const values = filteredState.map(([, value]) => value);
 
     setState(keys, values);
-  }, [ref]);
+  }, [ref, options]);
 
   const fetcher: RequestFetcher<RequestOptions<Data, Err, FetchData>> = useCallback(async (...args) => {
     const resolvedMiddleware = configRef.current.middlewares
