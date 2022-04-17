@@ -1,17 +1,15 @@
 import type { State } from './types';
 import type { Cache } from './request-config';
+import { DefaultData, DefaultError, DefaultFetchData } from '.';
 
-export interface RequestOptions<Data, FetchData extends unknown[]> {
-  initWith?: FetchData | boolean;
-  cache?: Cache<State<Data, any>> | boolean;
-  dedupingFetching?: boolean;
-  initWhenUndefined?: boolean;
-  UNSTABLE__suspense?: boolean; // UNSTABLE
+export interface RequestOptions<Data = DefaultData, Err = DefaultError, FetchData extends unknown[] = DefaultFetchData> {
+  initWith: FetchData | boolean;
+  cache: Cache<State<Data, Err>> | boolean;
+  dedupingFetching: boolean;
+  initWhenUndefined: boolean;
 
-  fetcher?: (url: string, ...args: FetchData) => Promise<Data>;
+  fetcher: (url: string, ...args: FetchData) => Promise<Data>;
 }
-
-export type RequiredRequestOptions<Data, FetchData extends unknown[]> = Required<RequestOptions<Data, FetchData>>;
 
 export const defaultFetcher = async (
   url: string,
@@ -34,31 +32,29 @@ export const defaultFetcher = async (
   return response;
 }
 
-export const defaultOptions: RequestOptions<any, any> = {
+export const defaultOptions: RequestOptions<any, any, any> = {
   initWith: true,
   cache: true,
   dedupingFetching: true,
   initWhenUndefined: true,
-  UNSTABLE__suspense: false,
 
   fetcher: defaultFetcher,
 };
 
-const keys: (keyof RequiredRequestOptions<any, any>)[] = [
+const keys: (keyof RequestOptions<any, any, any>)[] = [
   'initWith',
   'cache',
   'dedupingFetching',
   'initWhenUndefined',
-  'UNSTABLE__suspense',
 
   'fetcher',
 ];
 
-export const mergeOptions = <Data, FetchData extends unknown[]>(
-  primary: RequestOptions<Data, FetchData>,
-  secondary: RequestOptions<Data, FetchData>,
-): RequestOptions<Data, FetchData> => {
-  const result: RequestOptions<Data, FetchData> = {};
+export const mergeOptions = <Data, Err, FetchData extends unknown[]>(
+  primary: Partial<RequestOptions<Data, Err, FetchData>>,
+  secondary: Partial<RequestOptions<Data, Err, FetchData>>,
+): Partial<RequestOptions<Data, Err, FetchData>> => {
+  const result: Partial<RequestOptions<Data, Err, FetchData>> = {};
 
   keys.forEach((key) => {
     if (key === 'initWith') {
@@ -92,9 +88,9 @@ export const mergeOptions = <Data, FetchData extends unknown[]>(
   return result;
 };
 
-export const createOptions = <Data, FetchData extends unknown[]>(
-  options: RequestOptions<Data, FetchData>,
-): RequiredRequestOptions<Data, FetchData> => mergeOptions(
+export const createOptions = <Data = DefaultData, Err = DefaultError, FetchData extends unknown[] = DefaultFetchData>(
+  options: Partial<RequestOptions<Data, Err, FetchData>>,
+): RequestOptions<Data, Err, FetchData> => mergeOptions(
   options,
   defaultOptions,
-) as RequiredRequestOptions<Data, FetchData>;
+) as RequestOptions<Data, Err, FetchData>;

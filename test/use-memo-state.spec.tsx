@@ -1,6 +1,5 @@
 import { useMemoState } from '../src';
 
-import { act, renderHook } from '@testing-library/react-hooks';
 import { fireEvent, render, screen } from '@testing-library/react';
 
 describe('useMemoState', () => {

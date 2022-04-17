@@ -1,6 +1,6 @@
 import { createOptions, defaultOptions, mergeOptions, RequestOptions } from '../../src';
 
-const getTarget = (name: string): RequestOptions<string, { type: string, name: string }[]> => ({
+const getTarget = (name: string): Partial<RequestOptions<string, Error, { type: string, name: string }[]>> => ({
   initWith: [
     {
       type: 'test',
@@ -24,7 +24,6 @@ describe('Utils: mergeOptions', () => {
     expect(target.cache).toBeUndefined();
     expect(target.fetcher).toBeUndefined();
     expect(target.dedupingFetching).toBeUndefined();
-    expect(target.UNSTABLE__suspense).toBeUndefined();
 
     expect((result.initWith as any)[0]).toEqual({
       type: 'test',
@@ -33,7 +32,6 @@ describe('Utils: mergeOptions', () => {
     expect(result.cache).toBe(false);
     expect(result.fetcher).toBeUndefined();
     expect(result.dedupingFetching).toBeUndefined();
-    expect(result.UNSTABLE__suspense).toBeUndefined();
   });
 
   it('empty fallback', () => {
@@ -48,7 +46,6 @@ describe('Utils: mergeOptions', () => {
     expect(target.cache).toBeUndefined();
     expect(target.fetcher).toBeUndefined();
     expect(target.dedupingFetching).toBeUndefined();
-    expect(target.UNSTABLE__suspense).toBeUndefined();
 
     expect((result.initWith as any)[0]).toEqual({
       type: 'test',
@@ -57,7 +54,6 @@ describe('Utils: mergeOptions', () => {
     expect(result.cache).toBeUndefined();
     expect(result.fetcher).toBeUndefined();
     expect(result.dedupingFetching).toBeUndefined();
-    expect(result.UNSTABLE__suspense).toBeUndefined();
   });
 
   it('override priority', () => {
@@ -79,7 +75,6 @@ describe('Utils: mergeOptions', () => {
     expect(target.cache).toBeUndefined();
     expect(target.fetcher).toBeUndefined();
     expect(target.dedupingFetching).toBeUndefined();
-    expect(target.UNSTABLE__suspense).toBeUndefined();
 
     expect((result.initWith as any)[0]).toEqual({
       type: 'test',
@@ -88,7 +83,6 @@ describe('Utils: mergeOptions', () => {
     expect(result.cache).toBeUndefined();
     expect(result.fetcher).toBeUndefined();
     expect(result.dedupingFetching).toBeUndefined();
-    expect(result.UNSTABLE__suspense).toBeUndefined();
   });
 
   it('array merge strategy', () => {
@@ -115,7 +109,6 @@ describe('Utils: mergeOptions', () => {
     expect(target.cache).toBeUndefined();
     expect(target.fetcher).toBeUndefined();
     expect(target.dedupingFetching).toBeUndefined();
-    expect(target.UNSTABLE__suspense).toBeUndefined();
 
     expect(result.initWith).toHaveLength(2);
     expect((result.initWith as any)[0]).toEqual({
@@ -129,7 +122,6 @@ describe('Utils: mergeOptions', () => {
     expect(result.cache).toBeUndefined();
     expect(result.fetcher).toBeUndefined();
     expect(result.dedupingFetching).toBeUndefined();
-    expect(result.UNSTABLE__suspense).toBeUndefined();
   });
 });
 
@@ -139,9 +131,9 @@ describe('Options: createOptions', () => {
       initWith: false,
       cache: false,
       dedupingFetching: false,
-    }) as any;
+    }) as Partial<RequestOptions>;
 
-    const expectTo = {
+    const expectTo: Partial<RequestOptions> = {
       ...defaultOptions,
       initWith: false,
       cache: false,

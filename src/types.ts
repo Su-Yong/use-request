@@ -2,23 +2,24 @@ import type { RequestOptions } from './options';
 
 export type DefaultData = any;
 export type DefaultError = Error;
-export type DefaultFetcherData = unknown;
+export type DefaultFetchData = any[];
 
-export type RequestFetcher<Option extends RequestOptions<any, any>> = (
-  Required<Option>['fetcher'] extends (url: string, ...args: infer K) => unknown
+export type RequestFetcher<Option extends RequestOptions<any, any, any>> = (
+  Option['fetcher'] extends (url: string, ...args: infer K) => unknown
     ? (...args: K) => void | Promise<void>
     : () => void | Promise<void>
 );
 
-export type State<Data, Err> = {
+export interface State<Data, Err> {
   data: Data | undefined;
   error: Err | undefined;
   isValidating: boolean;
-};
+}
+
 export interface Requester<
   Data = DefaultData,
   Err = DefaultError,
-  Option extends RequestOptions<any, any> = RequestOptions<Data, any>,
+  Option extends RequestOptions<any, any, any> = RequestOptions<Data, Err, any>,
 > extends State<Data, Err> {
   fetcher: RequestFetcher<Option>;
 }
