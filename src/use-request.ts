@@ -58,12 +58,8 @@ const useRequest = <
     isValidating: initIsValidating || Array.isArray(options.initWith),
   });
 
-  const changeState = useCallback((newState: State<Data, Err>) => {
-    // state가 바뀌지 않은 경우에는 object reference가 항상 같음
-    let equals = (a: any, b: any) => a === b; // reference equal
-    if (options.ignoreSameValue) equals = isEqual; // deep value equal
-
-    const filteredState = Object.entries(newState).filter(([key, data]) => !equals(ref.current[key as keyof State<Data, Err>], data));
+  const changeState = useCallback((newState: Partial<State<Data, Err>>) => {
+    const filteredState = Object.entries(newState).filter(([key, data]) => !options.ignoreSameValue || !isEqual(ref.current[key as keyof State<Data, Err>], data));
     const keys = filteredState.map(([key]) => key) as (keyof State<Data, Err>)[];
     const values = filteredState.map(([, value]) => value);
 
@@ -103,7 +99,7 @@ const useRequest = <
         isValidating: true,
       };
       nowCache.set(id, newState);
-      broadcast(id, newState);
+      broadcast(id, { isValidating: true });
     }
 
     const newState: State<Data, Err> = await options.fetcher(url, ...args)

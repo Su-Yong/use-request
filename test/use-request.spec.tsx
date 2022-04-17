@@ -433,12 +433,80 @@ describe('useRequest', () => {
     });
   });
 
-  xit('option(UNSTABLE__suspense: true)', async () => {
-    throw Error('TODO');
+  it('option(ignoreSameValue: true)', async () => {
+    let renderCount = 0;
+    const TestComponent = () => {
+      const { data, fetcher } = useRequest('/ignoreSameValue', {
+        ...options,
+        ignoreSameValue: true,
+      });
+
+      const click = () => {
+        fetcher();
+      }
+
+      renderCount += 1;
+
+      return (
+        <div>
+          <div data-testid={'data'}>{data}</div>
+          <button data-testid={'button'} onClick={click} />
+        </div>
+      );
+    };
+
+    render(
+      <RequestConfig cache={cache}>
+        <TestComponent />
+      </RequestConfig>
+    );
+    expect(renderCount).toBe(1);
+
+    for (let i = 0; i < 3; i++) {
+      fireEvent.click(screen.getByTestId('button'));
+      await waitFor(() => {
+        expect(renderCount).toBe(2);
+        expect(screen.getByTestId('data')).toHaveTextContent(/^\/ignoreSameValue:test$/);
+      });
+    }
   });
 
-  xit('option(UNSTABLE__suspense: false)', async () => {
-    throw Error('TODO');
+  it('option(ignoreSameValue: false)', async () => {
+    let renderCount = 0;
+    const TestComponent = () => {
+      const { data, fetcher } = useRequest('/ignoreSameValue', {
+        ...options,
+        ignoreSameValue: false,
+      });
+
+      const click = () => {
+        fetcher();
+      }
+
+      renderCount += 1;
+
+      return (
+        <div>
+          <div data-testid={'data'}>{data}</div>
+          <button data-testid={'button'} onClick={click} />
+        </div>
+      );
+    };
+
+    render(
+      <RequestConfig cache={cache}>
+        <TestComponent />
+      </RequestConfig>
+    );
+    expect(renderCount).toBe(1);
+
+    for (let i = 0; i < 3; i++) {
+      fireEvent.click(screen.getByTestId('button'));
+      await waitFor(() => {
+        expect(renderCount).toBe(2 + i);
+        expect(screen.getByTestId('data')).toHaveTextContent(/^\/ignoreSameValue:test$/);
+      });
+    }
   });
 
   it('specific id', async () => {

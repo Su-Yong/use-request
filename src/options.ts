@@ -48,6 +48,7 @@ const keys: (keyof RequestOptions<any, any, any>)[] = [
   'cache',
   'dedupingFetching',
   'initWhenUndefined',
+  'ignoreSameValue',
 
   'fetcher',
 ];
