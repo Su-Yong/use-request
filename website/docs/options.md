@@ -9,7 +9,8 @@ The options available for `useRequest`.
 * `cache?: Cache<State<Data, Err>> | boolean`
 * `dedupingFetching?: boolean`
 * `initWhenUndefined?: boolean`
-* ~~`UNSTABLE__suspense?: boolean`~~ (SOON)
+* `ignoreSameValue?: boolean`
+* `revalidationInterval?: number`
 
 ## initWith
 The `initWith` option sends a request immediately when the component is mounted. If you write the arguments to send **request** in the `initWith` field as an array, you send the **request** by passing the data to **fetcher**.
@@ -165,7 +166,71 @@ const Component = () => {
 ```
 In the above case, even if the `Child` component is added, only **ONE** `request` occurs. If you change `initWhenUndefined` to `false`, a request will be sent whenever the `Child` component is mounted.
 
-## UNSTABLE__suspense
-:::info
-`UNSTABLE__suspense` is not yet implemented. This option was created to support React Suspense in the future.
+## ignoreSameValue
+The `ignoreSameValue` option does not re-render if the response of `request` is the same as the current `data` or `error`.
+
+```tsx live
+function Component() {
+  const renderCount = useRef(0);
+  const { data, fetcher } = useRequest('https://jsonplaceholder.typicode.com/posts', {
+    ignoreSameValue: false,
+  });
+
+  const onClick = () => {
+    fetcher({
+      title: 'foo',
+      content: 'bar',
+      userId: 1,
+    });
+  };
+
+  renderCount.current += 1;
+
+  return (
+    <div>
+      <div>The component is rendered {renderCount.current} time(s).</div>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+      <button onClick={onClick}>Upload</button>
+    </div>
+  );
+}
+```
+In the example above, when the upload button is pressed, the number of renderings continuously increases.
+
+```tsx live
+function Component() {
+  const renderCount = useRef(0);
+  const { data, fetcher } = useRequest('https://jsonplaceholder.typicode.com/posts', {
+    ignoreSameValue: true,
+  });
+
+  const onClick = () => {
+    fetcher({
+      title: 'foo',
+      content: 'bar',
+      userId: 1,
+    });
+  };
+
+  renderCount.current += 1;
+
+  return (
+    <div>
+      <div>The component is rendered {renderCount.current} time(s).</div>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+      <button onClick={onClick}>Upload</button>
+    </div>
+  );
+}
+```
+
+If the `ignoreSameValue` option is `true`, the number of renders will not go higher than 3 even if you keep pressing upload button.
+
+## revalidationInterval
+The `revalidationInterval` option reuses the last fetched data without fetching new data if the last fetched data is within the time of `revalidationInterval`.
+
+At that time, `revalidationInterval` use `miliseconds` unit.
+
+:::caution
+If `revalidationInterval` is 0 or less, it always request new data without checking old data.
 :::
