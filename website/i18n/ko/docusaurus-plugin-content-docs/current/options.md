@@ -225,7 +225,7 @@ function Component() {
 }
 ```
 
-`ignoreSameValue`옵션이 `true`인 경우에는 업로드를 계속 눌러도 렌더링 횟수가 2회 이상으로 올라가지 않습니다.
+`ignoreSameValue`옵션이 `true`인 경우에는 업로드를 계속 눌러도 렌더링 횟수가 3회 이상으로 올라가지 않습니다.
 
 ## revalidationInterval
 `revalidationInterval`옵션은 마지막으로 가져온 데이터가 `revalidationInterval`만큼의 시간안이면 새 데이터를 가져오지 않고 마지막으로 가져온 데이터를 재사용합니다.
