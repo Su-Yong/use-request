@@ -9,7 +9,7 @@ title: 옵션
 * `cache?: Cache<State<Data, Err>> | boolean`
 * `dedupingFetching?: boolean`
 * `initWhenUndefined?: boolean`
-* ~~`UNSTABLE__suspense?: boolean`~~ (지원 예정입니다)
+* `ignoreSameValue?: boolean`
 
 ## initWith
 `initWith` 옵션은 컴포넌트가 마운트 될때 동시에 바로 요청을 보내는 옵션입니다. `initWith`필드에 **request** 보낼 인자들을 배열로 작성하면 **fetcher**에 해당 데이터를 전달하여 **request**를 보냅니다.
@@ -166,7 +166,62 @@ const Component = () => {
 ```
 위와 같은 경우에는 `Child`컴포넌트가 추가되더라도 **단 한번**의 `request`만 발생합니다. 만약 `initWhenUndefined`를 `false`로 바꾼다면, `Child` 컴포넌트가 마운트 될때마다 요청을 보냅니다.
 
-## UNSTABLE__suspense
-:::info
-`UNSTABLE__suspense`는 아직 구현되지 않은 옵션입니다. 추후에 React Suspense를 지원하기 위해 만들어진 옵션입니다
-:::
+## ignoreSameValue
+`ignoreSameValue` 옵션은 `request`의 응답이 현재 `data`, `error`와 동일하면 리렌더링을 하지 않는 옵션입니다.
+
+```tsx live
+function Component() {
+  const renderCount = useRef(0);
+  const { data, fetcher } = useRequest('https://jsonplaceholder.typicode.com/posts', {
+    ignoreSameValue: false,
+  });
+
+  const onClick = () => {
+    fetcher({
+      title: 'foo',
+      content: 'bar',
+      userId: 1,
+    });
+  };
+
+  renderCount.current += 1;
+
+  return (
+    <div>
+      <div>Component는 {renderCount.current}번 렌더링 되었습니다.</div>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+      <button onClick={onClick}>업로드</button>
+    </div>
+  );
+}
+```
+위 예제는 업로드 버튼을 눌렀을때 지속적으로 렌더링 횟수가 올라갑니다 하지만 아래와 같이
+
+```tsx live
+function Component() {
+  const renderCount = useRef(0);
+  const { data, fetcher } = useRequest('https://jsonplaceholder.typicode.com/posts', {
+    ignoreSameValue: true,
+  });
+
+  const onClick = () => {
+    fetcher({
+      title: 'foo',
+      content: 'bar',
+      userId: 1,
+    });
+  };
+
+  renderCount.current += 1;
+
+  return (
+    <div>
+      <div>Component는 {renderCount.current}번 렌더링 되었습니다.</div>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+      <button onClick={onClick}>업로드</button>
+    </div>
+  );
+}
+```
+
+`ignoreSameValue`옵션이 `true`인 경우에는 업로드를 계속 눌러도 렌더링 횟수가 2회 이상으로 올라가지 않습니다.
