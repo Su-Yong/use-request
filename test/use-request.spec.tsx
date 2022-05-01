@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-import { createOptions, State, RequestConfig, useRequest, Cache, createMiddleware } from '../src';
+import { createOptions, RequestConfig, useRequest, Cache, createMiddleware, CacheData } from '../src';
 
 import { time } from './utils';
 
@@ -16,7 +16,7 @@ const options = createOptions({
 });
 
 describe('useRequest', () => {
-  let cache: Cache<State<any, any>> = new Map();
+  let cache: Cache<CacheData<any, any>> = new Map();
 
   beforeEach(() => {
     cache = new Map();
@@ -260,8 +260,8 @@ describe('useRequest', () => {
     await waitFor(() => {
       expect(screen.getByTestId('data')).toHaveTextContent(/^\/cache:main$/);
     
-      expect(cache.get('/cache')?.data).toBeUndefined();
-      expect(newCache.get('/cache')?.data).toEqual('/cache:main');
+      expect(cache.get('/cache')?.state?.data).toBeUndefined();
+      expect(newCache.get('/cache')?.state?.data).toEqual('/cache:main');
     });
   });
 
@@ -507,6 +507,86 @@ describe('useRequest', () => {
         expect(screen.getByTestId('data')).toHaveTextContent(/^\/ignoreSameValue:test$/);
       });
     }
+  });
+
+  it('option(revalidationInterval: 1000)', async () => {
+    const TestComponent = () => {
+      const { data, fetcher } = useRequest('/ignoreSameValue', {
+        ...options,
+        revalidationInterval: 1000,
+      });
+
+      const click = () => {
+        fetcher(Date.now().toString());
+      }
+
+      return (
+        <div>
+          <div data-testid={'data'}>{data}</div>
+          <button data-testid={'button'} onClick={click} />
+        </div>
+      );
+    };
+
+    render(
+      <RequestConfig cache={cache}>
+        <TestComponent />
+      </RequestConfig>
+    );
+
+    let response: any = null;
+    
+    fireEvent.click(screen.getByTestId('button'));
+    await waitFor(() => {
+      response = screen.getByTestId('data').textContent;
+      expect(response).toBeTruthy();
+    });
+    
+    await time(500);
+    fireEvent.click(screen.getByTestId('button'));
+    await waitFor(() => {
+      expect(screen.getByTestId('data')).toHaveTextContent(response);
+    });
+  });
+
+  it('option(revalidationInterval: 0)', async () => {
+    const TestComponent = () => {
+      const { data, fetcher } = useRequest('/ignoreSameValue', {
+        ...options,
+        revalidationInterval: 0,
+      });
+
+      const click = () => {
+        fetcher(Date.now().toString());
+      }
+
+      return (
+        <div>
+          <div data-testid={'data'}>{data}</div>
+          <button data-testid={'button'} onClick={click} />
+        </div>
+      );
+    };
+
+    render(
+      <RequestConfig cache={cache}>
+        <TestComponent />
+      </RequestConfig>
+    );
+
+    let response: any = null;
+    
+    fireEvent.click(screen.getByTestId('button'));
+    await waitFor(() => {
+      response = screen.getByTestId('data').textContent;
+      expect(response).toBeTruthy();
+    });
+    
+    await time(500);
+    fireEvent.click(screen.getByTestId('button'));
+    await waitFor(() => {
+      expect(screen.getByTestId('data')).not.toHaveTextContent(response);
+    });
   });
 
   it('specific id', async () => {

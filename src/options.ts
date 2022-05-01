@@ -1,13 +1,13 @@
-import type { State } from './types';
-import type { Cache } from './request-config';
-import { DefaultData, DefaultError, DefaultFetchData } from '.';
+import type { Cache, CacheData } from './request-config';
+import type { DefaultData, DefaultError, DefaultFetchData } from './types';
 
 export interface RequestOptions<Data = DefaultData, Err = DefaultError, FetchData extends unknown[] = DefaultFetchData> {
   initWith: FetchData | boolean;
-  cache: Cache<State<Data, Err>> | boolean;
+  cache: Cache<CacheData<Data, Err>> | boolean;
   dedupingFetching: boolean;
   initWhenUndefined: boolean;
   ignoreSameValue: boolean;
+  revalidationInterval: number;
 
   fetcher: (url: string, ...args: FetchData) => Promise<Data>;
 }
@@ -39,6 +39,7 @@ export const defaultOptions: RequestOptions<any, any, any> = {
   dedupingFetching: true,
   initWhenUndefined: true,
   ignoreSameValue: false,
+  revalidationInterval: 0,
 
   fetcher: defaultFetcher,
 };
@@ -49,6 +50,7 @@ const keys: (keyof RequestOptions<any, any, any>)[] = [
   'dedupingFetching',
   'initWhenUndefined',
   'ignoreSameValue',
+  'revalidationInterval',
 
   'fetcher',
 ];

@@ -8,8 +8,8 @@ import type { RequestOptions } from './options';
 import type { RequestConfigType } from './request-config';
 import type { DefaultData, DefaultError, State, Requester, RequestFetcher, RequestKey } from './types';
 import type { Middleware } from './middleware';
-import { DefaultFetchData } from '.';
-import { isEqual } from './utils';
+import { createCacheData, DefaultFetchData } from '.';
+import { DeepPartial, isEqual } from './utils';
 
 const getCachedValue = <Data, Err, FetchData extends unknown[]>(
   id: string | undefined,
@@ -23,7 +23,7 @@ const getCachedValue = <Data, Err, FetchData extends unknown[]>(
   };
 
   if (id && options.cache && options.initWith !== false) {
-    return config?.get(id) ?? fallback;
+    return config?.get(id)?.state ?? fallback;
   }
 
   return fallback;
@@ -58,7 +58,7 @@ const useRequest = <
     isValidating: initIsValidating || Array.isArray(options.initWith),
   });
 
-  const changeState = useCallback((newState: Partial<State<Data, Err>>) => {
+  const changeState = useCallback((newState: DeepPartial<State<Data, Err>>) => {
     const filteredState = Object.entries(newState).filter(([key, data]) => !options.ignoreSameValue || !isEqual(ref.current[key as keyof State<Data, Err>], data));
     const keys = filteredState.map(([key]) => key) as (keyof State<Data, Err>)[];
     const values = filteredState.map(([, value]) => value);
@@ -81,28 +81,45 @@ const useRequest = <
       .filter((it) => it) as Middleware<Data, Err, FetchData>[];
 
     if (options.dedupingFetching) {
-      if (options.cache && configRef.current.cache.get(id)?.isValidating) return;
+      if (options.cache && configRef.current.cache.get(id)?.state?.isValidating) return;
       if (!options.cache && ref.current.isValidating) return;
     }
 
-    setState('isValidating', true);
+    let newState: State<Data, Err>;
     if (options.cache) {
       const nowCache = (
         typeof options.cache === 'boolean'
           ? configRef.current.cache
           : options.cache
       );
- 
-      const newState = {
-        data: ref.current.data,
-        error: ref.current.error,
-        isValidating: true,
-      };
-      nowCache.set(id, newState);
-      broadcast(id, { isValidating: true });
+
+      const nowData = nowCache.get(id);
+      if (
+        nowData
+        && options.revalidationInterval > 0
+        && (nowData?.timestamp ?? 0) > Date.now() - options.revalidationInterval
+      ) {
+        newState = nowData.state;
+      } else {
+        setState('isValidating', true);
+        const cacheData = createCacheData({
+          data: ref.current.data,
+          error: ref.current.error,
+          isValidating: true,
+        });
+  
+        nowCache.set(id, cacheData);
+        broadcast(id, {
+          ...cacheData,
+          state: {
+            isValidating: cacheData.state.isValidating,
+          },
+         });
+      }
     }
 
-    const newState: State<Data, Err> = await options.fetcher(url, ...args)
+    if (!newState!) {
+      newState = await options.fetcher(url, ...args)
       .then((response) => ({
         data: response,
         error: undefined,
@@ -113,6 +130,8 @@ const useRequest = <
         error: err,
         isValidating: false,
       }));
+    }
+    const cacheData = createCacheData(newState);
 
     if (!mountRef.current) return;
     if (options.cache) {
@@ -122,8 +141,8 @@ const useRequest = <
           : options.cache
       );
  
-      nowCache.set(id, newState);
-      broadcast(id, newState);
+      nowCache.set(id, cacheData);
+      broadcast(id, cacheData);
     } else {
       changeState(newState);
     }
@@ -137,11 +156,13 @@ const useRequest = <
           fetchData: args,
         });
       });
-  }, [url, options.cache, options.dedupingFetching, options.fetcher, ref, mountRef, configRef, keyRef, changeState]);
+  }, [url, options.cache, options.dedupingFetching, options.revalidationInterval, options.fetcher, ref, mountRef, configRef, keyRef, changeState]);
   
   useEffect(() => {
     if (options.cache) {
-      const unsubscribe = subscribe<Data, Err>(id, changeState);
+      const unsubscribe = subscribe<Data, Err>(id, ({ state }) => {
+        if (state) changeState(state);
+      });
 
       return unsubscribe;
     }
