@@ -10,6 +10,7 @@ title: 옵션
 * `dedupingFetching?: boolean`
 * `initWhenUndefined?: boolean`
 * `ignoreSameValue?: boolean`
+* `revalidationInterval?: number`
 
 ## initWith
 `initWith` 옵션은 컴포넌트가 마운트 될때 동시에 바로 요청을 보내는 옵션입니다. `initWith`필드에 **request** 보낼 인자들을 배열로 작성하면 **fetcher**에 해당 데이터를 전달하여 **request**를 보냅니다.
@@ -225,3 +226,12 @@ function Component() {
 ```
 
 `ignoreSameValue`옵션이 `true`인 경우에는 업로드를 계속 눌러도 렌더링 횟수가 2회 이상으로 올라가지 않습니다.
+
+## revalidationInterval
+`revalidationInterval`옵션은 마지막으로 가져온 데이터가 `revalidationInterval`만큼의 시간안이면 새 데이터를 가져오지 않고 마지막으로 가져온 데이터를 재사용합니다.
+
+이때 `revalidationInterval`은 `miliseconds`단위 입니다.
+
+:::caution
+`revalidationInterval`이 0이하인 경우는 이전 데이터를 확인하지 않고 항상 새 데이터를 요청합니다.
+:::
