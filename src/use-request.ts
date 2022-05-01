@@ -64,7 +64,7 @@ const useRequest = <
     const values = filteredState.map(([, value]) => value);
 
     setState(keys, values);
-  }, [ref, options]);
+  }, [ref, options.ignoreSameValue]);
 
   const fetcher: RequestFetcher<RequestOptions<Data, Err, FetchData>> = useCallback(async (...args) => {
     const resolvedMiddleware = configRef.current.middlewares
@@ -137,7 +137,7 @@ const useRequest = <
           fetchData: args,
         });
       });
-  }, [url, options, ref, mountRef, configRef, keyRef, changeState]);
+  }, [url, options.cache, options.dedupingFetching, options.fetcher, ref, mountRef, configRef, keyRef, changeState]);
   
   useEffect(() => {
     if (options.cache) {
@@ -145,7 +145,7 @@ const useRequest = <
 
       return unsubscribe;
     }
-  }, [id, options.cache, ref, changeState]);
+  }, [id, options.cache, changeState]);
 
   useEffect(() => {
     if (Array.isArray(options.initWith)) {
