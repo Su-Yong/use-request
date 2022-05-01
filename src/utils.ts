@@ -1,3 +1,9 @@
+export type DeepPartial<T> = T | (
+  T extends object
+    ? { [key in keyof T]?: DeepPartial<T[key]> }
+    : T
+);
+
 export const isEqual = (a: any, b: any): boolean => {
   if (a && b && typeof a === 'object' && typeof b === 'object') {
     if (Array.isArray(a) && Array.isArray(b)) {

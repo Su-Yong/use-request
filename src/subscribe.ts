@@ -1,10 +1,11 @@
-import type { State } from './types';
+import type { CacheData } from './request-config';
+import type { DeepPartial } from './utils';
 
-export type Listener<Data, Err> = (state: Partial<State<Data, Err>>) => void;
+export type Listener<Data, Err> = (state: DeepPartial<CacheData<Data, Err>>) => void;
 
 const map = new Map<string, Listener<any, any>[]>();
 
-export const broadcast = <Data, Err>(id: string, state: Partial<State<Data, Err>>) => {
+export const broadcast = <Data, Err>(id: string, state: DeepPartial<CacheData<Data, Err>>) => {
   const listeners = map.get(id);
 
   listeners?.forEach((listener) => listener(state));

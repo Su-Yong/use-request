@@ -13,8 +13,14 @@ export interface Cache<Data> {
   clear: () => void;
 }
 
+export interface CacheData<Data, Err> {
+  state: State<Data, Err>;
+  timestamp: number;
+  id: number;
+}
+
 export interface RequestConfigType<Data, Err, FetchData extends unknown[]> {
-  cache: Cache<State<Data, Err>>;
+  cache: Cache<CacheData<Data, Err>>;
   options: RequestOptions<Data, Err, FetchData>;
   middlewares: Middleware<Data, Err, FetchData>[];
 }
@@ -86,3 +92,10 @@ export const RequestConfig = <Data, Err, FetchData extends unknown[]>({
     </RequestConfigContext.Provider>
   )
 };
+
+let cacheId = 0;
+export const createCacheData = <Data, Err>(state: State<Data, Err>): CacheData<Data, Err> => ({
+  id: cacheId++,
+  timestamp: Date.now(),
+  state,
+});
